@@ -1,0 +1,27 @@
+5
+superSword
+weapon
+0 2 1 5 0
+superArmor
+armor
+1 1 1000 8 1
+money
+item
+2 0
+doorKey
+key
+3 0
+lavaKey
+key
+4 0
+chestKey
+key
+2 0
+
+
+
+
+
+
+
+item[name,type,description,tex,eff[dureff,poweff,usable]]
