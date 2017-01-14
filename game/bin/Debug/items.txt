@@ -1,4 +1,4 @@
-11
+12
 superSword
 weapon
 this sword add 5 damage
@@ -6,7 +6,7 @@ this sword add 5 damage
 superArmor
 armor
 this item add undeath in lava at 10s
-1 1 1000 8 1
+1 1 300 8 1
 money
 editorItem
 onlyEditorItem
@@ -15,9 +15,9 @@ doorKey
 key
 master key which open standard doors
 3 0
-lavaKey
+caveKey
 key
-key which can open secret door in lava
+key which can open door in GREATE MAZE
 4 0
 chestKey
 key
@@ -30,7 +30,7 @@ this item can reincarnate you if you death
 cheatSword
 godWeapon
 this sword add NaN damage
-7 2 1 100 0
+7 2 1 999 0
 masterKey
 godItem
 this key can open all doors in game
@@ -38,11 +38,15 @@ this key can open all doors in game
 immortalityAmulet
 godItem
 this amulet make you immortal
-1 1 1 9 0
+1 1 1 5 0
 waterPill
 pill
 pill which give you waterbreath
 0 4 500 1 1
+veryOldKey
+key
+this key is very old and i don't no which door he open
+5 0
 
 
 

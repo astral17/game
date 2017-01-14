@@ -1,5 +1,5 @@
 ﻿Public Class Form1
-    Public version = "0.9.0beta"
+    Public version = "0.9.35"
     Public sX, sY, wX, wY, wordscount As Integer
     Public kUp, kDown, kLeft, kRight As Boolean
     Public godMode As Boolean = False
@@ -531,9 +531,9 @@
                 'load data
                 gameload()
             Case Keys.T
-                loadmap("cave")
+                loadmap(player.curWorld, player.x, player.y)
             Case Keys.Y
-                loadmap("main")
+                loadmap("cave2")
             Case Keys.C
                 MessageBox.Show(player.x.ToString + " " + player.y.ToString)
             Case Keys.Z
