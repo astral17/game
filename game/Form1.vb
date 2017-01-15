@@ -1,5 +1,5 @@
 ﻿Public Class Form1
-    Public version = "0.9.35"
+    Public version = "1.0.0pre-1beta"
     Public sX, sY, wX, wY, wordscount As Integer
     Public kUp, kDown, kLeft, kRight As Boolean
     Public godMode As Boolean = False
@@ -18,6 +18,7 @@
     Public loader As New Loading
     Public player As New Players
     Public effect As New Effects
+    Public shops As New Shop
 
     Enum BlockType
         Grass = 0
@@ -156,6 +157,7 @@
         Public slot(99) As slots
         Public count As Integer = -1
         Public open As Boolean = False
+        Public selected As Integer = -1
         Public desc As String = ""
         Public page As Integer = 0
         Public Sub additem(ByVal id As Integer, countitem As Integer)
@@ -175,25 +177,24 @@
                 slot(count).id = id
                 slot(count).count = countitem
                 Dim x As Boolean = Form1.items.isUsable(count)
-                'MessageBox.Show(Form1.items.isUsable(slot(count).id).ToString)
                 If Not (Form1.items.isUsable(slot(count).id)) Then
                     useItem(count)
                 End If
             End If
         End Sub
-        Public Sub subitem(ByVal id As Integer, countitem As Integer)
+        Public Sub subItem(ByVal id As Integer, itemCount As Integer)
             Dim t As Boolean = False
             For i As Integer = 0 To count
                 If t Then
                     slot(i - 1) = slot(i)
                 ElseIf slot(i).id = id Then
-                    If Not Form1.items.isUsable(slot(i).id) Then
-                        Dim idEff = Form1.items.eff(slot(i).id)
-                        Dim poweff = Form1.items.poweff(slot(i).id)
-                        Form1.effect.remove(idEff, poweff)
-                    End If
-                    slot(i).count -= 1
-                    If slot(i).count = 0 Then
+                    slot(i).count -= itemCount
+                    If slot(i).count <= 0 Then
+                        If Not Form1.items.isUsable(slot(i).id) Then
+                            Dim idEff = Form1.items.eff(slot(i).id)
+                            Dim poweff = Form1.items.poweff(slot(i).id)
+                            Form1.effect.remove(idEff, poweff)
+                        End If
                         t = True
                     End If
                 End If
@@ -201,7 +202,24 @@
             If t Then
                 slot(count).id = 0
                 slot(count).count = 0
+                slot(count).tex = 0
                 count -= 1
+            End If
+        End Sub
+        Public Sub subItemFromSlot(ByVal num As Integer, countitem As Integer)
+            If (num < 0 Or num > count) Then
+                Return
+            End If
+            If slot(num).count <= 0 Then
+                Return
+            End If
+            If slot(num).count <= countitem Then
+                For i As Integer = num + 1 To count
+                    slot(i - 1) = slot(i)
+                Next
+                count -= 1
+            Else
+                slot(num).count -= countitem
             End If
         End Sub
         Public Function useItem(ByVal slotNum As Integer) As Boolean
@@ -231,9 +249,66 @@
         End Function
     End Class
     <Serializable()>
+    Public Structure shopItem
+        Public id, count, cost As Integer
+        Public Sub New(ByVal id1 As Integer, count1 As Integer, cost1 As Integer)
+            id = id1
+            count = count1
+            cost = cost1
+        End Sub
+    End Structure
+    <Serializable()>
+    Public Class Shop
+        Public count As Integer = -1
+        Public p(99) As Point
+        Public tex(99) As Integer
+        Public items(99, 99) As shopItem
+        Public world(99) As String
+        Public itemsCount(99) As Integer
+        Public selected As Integer = -1
+        Public Function create(ByVal x As Integer, y As Integer, tex1 As Integer)
+            count += 1
+            p(count).X = x
+            p(count).Y = y
+            tex(count) = tex1
+            world(count) = Form1.player.curWorld
+            itemsCount(count) = -1
+            Return count
+        End Function
+        Public Sub addItem(ByVal num As Integer, item As shopItem)
+            itemsCount(num) += 1
+            items(num, itemsCount(num)) = item
+        End Sub
+        Public Sub buyItem(ByVal shopNum As Integer, itemID As Integer, itemCount As Integer)
+            With items(shopNum, itemID)
+                If ((.count <> -1 And .count < itemCount) Or Form1.player.money < .cost * itemCount) Then
+                    Return
+                End If
+                If .count <> -1 Then
+                    .count -= itemCount
+                End If
+                Form1.player.money -= .cost * itemCount
+                Form1.inv.additem(.id, itemCount)
+            End With
+        End Sub
+        Public Sub sellItem(ByVal shopNum As Integer, itemID As Integer, itemCount As Integer)
+            With items(shopNum, itemID)
+                If Form1.inv.searchItem(.id) < itemCount Then
+                    Return
+                End If
+                If .count <> -1 Then
+                    .count += itemCount
+                End If
+                Form1.player.money += .cost * itemCount
+                Form1.inv.subItem(.id, itemCount)
+            End With
+        End Sub
+    End Class
+    <Serializable()>
     Public Class Effects  'id dur pow temp
         Public id(99) As Integer, dur(99) As Integer, pow(99) As Integer, isTemp(99) As Boolean, tex(99) As Integer, showDesc(99) As Boolean
-        Public count = -1
+        Public selected As Integer = -1
+        Public count As Integer = -1
         Public Sub add(ByVal id1 As Integer, dur1 As Integer, pow1 As Integer, itemID As Integer, Optional ByVal isTemp1 As Boolean = True)
             count += 1
             id(count) = id1
@@ -503,6 +578,9 @@
         End If
     End Function
     Private Sub Form1_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        If e.KeyCode = Keys.ShiftKey Then
+            Return
+        End If
         Dim tmp = inv.open
         inv.open = False
         e.SuppressKeyPress = True
@@ -522,6 +600,15 @@
                     inv.desc = ""
                     inv.open = True
                 End If
+            Case Keys.Q
+                If tmp Then
+                    Dim cfd = 1
+                    If (e.Shift And (inv.selected >= 0 And inv.selected <= inv.count)) Then
+                        cfd = inv.slot(inv.selected).count
+                    End If
+                    inv.subItemFromSlot(inv.selected, cfd)
+                    inv.open = True
+                End If
             Case Keys.S
                 'save data
                 gamesave()
@@ -534,10 +621,14 @@
                 loadmap(player.curWorld, player.x, player.y)
             Case Keys.Y
                 loadmap("cave2")
+            Case Keys.U
+                shops.buyItem(0, 0, 1)
+            Case Keys.I
+                shops.sellItem(0, 0, 1)
             Case Keys.C
                 MessageBox.Show(player.x.ToString + " " + player.y.ToString)
             Case Keys.Z
-                inv.subitem(0, 1)
+                inv.subItem(0, 1)
             Case Keys.G
                 If godMode Then
                     godMode = False
@@ -822,6 +913,20 @@
                 End If
                 plate.create(tmp1, tmp2, tmp7, tmp8, tmp3, tmp4, tmp5, tmp6)
             Next
+            n = Int(fReader.ReadLine()) - 1
+            For i As Integer = 0 To n
+                tmp1 = readstreamint(fReader)
+                tmp2 = readstreamint(fReader)
+                tmp8 = readstreamint(fReader)
+                tmp3 = readstreamint(fReader) - 1
+                Dim num As Integer = shops.create(tmp1, tmp2, tmp8)
+                For j As Integer = 0 To tmp3
+                    tmp4 = readstreamint(fReader)
+                    tmp5 = readstreamint(fReader)
+                    tmp7 = readstreamint(fReader)
+                    shops.addItem(num, New shopItem(tmp4, tmp5, tmp7))
+                Next
+            Next
             fReader.Close()
             initmap(sX, sY, dir)
         Else
@@ -901,6 +1006,8 @@
                                 goodstep = True
                                 player.y -= 1
                             ElseIf godMode Then '!g
+                                plate.update = True '!g
+                                enem.update = True '!g
                                 goodstep = True '!g
                                 player.y -= 1 '!g
                             End If
@@ -913,6 +1020,8 @@
                             goodstep = True
                             player.y += 1
                         ElseIf godMode Then '!g
+                            plate.update = True '!g
+                            enem.update = True '!g
                             goodstep = True '!g
                             player.y += 1 '!g
                         End If
@@ -925,6 +1034,8 @@
                                 goodstep = True
                                 player.x -= 1
                             ElseIf godMode Then '!g
+                                plate.update = True '!g
+                                enem.update = True '!g
                                 goodstep = True '!g
                                 player.x -= 1 '!g
                             End If
@@ -937,6 +1048,8 @@
                             goodstep = True
                             player.x += 1
                         ElseIf godMode Then '!g
+                            plate.update = True '!g
+                            enem.update = True '!g
                             goodstep = True '!g
                             player.x += 1 '!g
                         End If
@@ -1012,6 +1125,12 @@
                         e.Graphics.DrawImage(tileset(6), scroolX(enem.getX(i)), scroolY(enem.getY(i)), 32, 32)
                     End If
                 Next
+                'отрисовка магазинов
+                For i As Integer = 0 To shops.count
+                    If shops.world(i) = player.curWorld Then
+                        e.Graphics.DrawImage(tileset(shops.tex(i)), scroolX(shops.p(i).X), scroolY(shops.p(i).Y), 32, 32)
+                    End If
+                Next
                 'отрисовка дверей
                 For i As Integer = 0 To doors.count
                     If (doors.tex(i) <> -1 And doors.world(i) = player.curWorld) Then
@@ -1025,6 +1144,9 @@
                         e.Graphics.DrawString(effect.dur(i) / 100, New Font("Arial", 9), Brushes.Black, 50, 50 + 40 * i)
                     End If
                 Next
+                If effect.selected <> -1 Then
+                    e.Graphics.DrawString(effect.pow(effect.selected), New Font("Arial", 9), Brushes.Black, 50, 30 + effect.selected * 40)
+                End If
                 'отрисовка инвентаря
                 If inv.open Then
                     e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
@@ -1107,13 +1229,11 @@
                 Next
             End If
             If inRect(e.X, e.Y, 105, 30 + 40 * 10, 200, 30 + 40 * 10 + 32) Then
-                'MessageBox.Show("left")
                 If inv.page > 0 Then
                     inv.page -= 1
                 End If
             End If
             If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
-                'MessageBox.Show("right")
                 If inv.page < Math.Floor(inv.count / 10) Then
                     inv.page += 1
                 End If
@@ -1124,23 +1244,22 @@
     Private Sub PictureBox1_MouseMove(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseMove
         If inv.open Then
             inv.desc = ""
-            'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
+            inv.selected = -1
             For i As Integer = 0 To 9 '105, 30 + 40 * i
                 If inRect(e.X, e.Y, 105, 30 + 40 * i, 495, 30 + 40 * i + 32) Then
                     Dim it As Integer = i + inv.page * 10
-                    'If (inv.useItem(it)) And (items.isUsable(inv.slot(it).id)) Then
-                    '   inv.subitem(inv.slot(it).id, 1)
-                    'End If
-                    'MessageBox.Show(it)
-                    'MessageBox.Show(items.desc(inv.slot(it).id))
                     If inv.count >= it Then
                         inv.desc = items.desc(inv.slot(it).id)
+                        inv.selected = it
                     End If
                 End If
             Next
         End If
-        For i As Integer = 1 To effect.count
-
+        effect.selected = -1
+        For i As Integer = 0 To effect.count
+            If inRect(e.X, e.Y, 1, 30 + i * 40, 1 + 32, 30 + i * 40 + 32) Then
+                effect.selected = i
+            End If
         Next
     End Sub
 End Class

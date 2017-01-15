@@ -56,4 +56,5 @@
 1
 13 27 4 8
 0
+0
 	monster(n[x,y,dif])		item(n[x,y,id,count])id=2(coins)		doors(n[dX,dY,id,tex])		plate(n[x,y,x2,y2acID,acVal]) -1 стандарт, -2 пред х -3 пред у
