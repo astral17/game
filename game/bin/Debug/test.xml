@@ -1,0 +1,17 @@
+<map>
+	<enemies>
+		<enemy>
+			<x>2</x>
+			<y>1</y>
+			<difficult>12</difficult>
+		</enemy>
+		<enemy>
+			<x>11</x>
+			<y>22</y>
+			<difficult>33</difficult>
+		</enemy>
+	</enemies>
+	<doors>
+
+	</doors>
+</map>

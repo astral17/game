@@ -1,0 +1,12 @@
+4
+13 7 3 8
+17 17 4 7
+23 19 3 8
+2 18 5 10
+
+
+doors.dX(0) = 13
+doors.dY(0) = 7
+doors.id(0) = 3
+doors.tex(0) = 8
+doors[dX,dY,id,tex]

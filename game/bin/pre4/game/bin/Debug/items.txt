@@ -1,0 +1,11 @@
+5
+testitem
+weapon
+test2item2
+armor
+test3item3
+item
+key1
+key
+key2
+key

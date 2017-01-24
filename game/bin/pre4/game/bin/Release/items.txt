@@ -1,0 +1,5 @@
+2
+testitem
+weapon
+test2item2
+armor
