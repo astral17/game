@@ -1,5 +1,5 @@
 ﻿Public Class Form1
-    Public version = "1.0.0pre-1beta"
+    Public version = "1.0.0pre-1"
     Public sX, sY, wX, wY, wordscount As Integer
     Public kUp, kDown, kLeft, kRight As Boolean
     Public godMode As Boolean = False
@@ -115,28 +115,30 @@
         Public item(99) As itemobj
         Public count As Integer = -1
         Public Sub init()
-            Dim fReader As System.IO.StreamReader = New IO.StreamReader("items.txt")
-            Dim n As Integer
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                name(i) = fReader.ReadLine()
-                type(i) = fReader.ReadLine()
-                desc(i) = fReader.ReadLine()
-                tex(i) = Form1.readstreamint(fReader)
-                eff(i) = Form1.readstreamint(fReader)
-                If eff(i) > 0 Then
-                    dureff(i) = Form1.readstreamint(fReader)
-                    poweff(i) = Form1.readstreamint(fReader)
+            Dim Xd As XDocument = XDocument.Load("items.xml")
+            'MessageBox.Show(Xd.Element("map").Element("test").Elements.Count)
+            'item[name,type,desc,tex,eff[dureff,poweff,usable]]
+            Dim i As Integer = -1
+            For Each xe As XElement In Xd.Elements("items").Elements
+                i = i + 1
+                name(i) = xe.Element("name")
+                type(i) = xe.Element("type")
+                desc(i) = xe.Element("description")
+                tex(i) = xe.Element("texture")
+                eff(i) = xe.Element("effectID")
+                If xe.Element("effectID") <> "0" Then
+                    dureff(i) = xe.Element("duration")
+                    poweff(i) = xe.Element("power")
                     Dim t As Integer
-                    t = Form1.readstreamint(fReader)
+                    t = xe.Element("usable")
                     If t = 0 Then
                         isUsable(i) = False
                     Else
                         isUsable(i) = True
                     End If
+                Else
                 End If
             Next
-            fReader.Close()
         End Sub
         Public Sub spawnitem(ByVal x As Integer, y As Integer, id As Integer, counti As Integer)
             count += 1
@@ -546,7 +548,8 @@
     End Class
     <Serializable()>
     Public Class Loading
-        Public loaded(100) As String
+        Public loaded(99) As String
+        Public bW(99), bH(99), bX(99), bY(99) As Integer
         Public count As Integer = -1
         Public Function isLoaded(ByVal name As String) As Boolean
             For i = 0 To count
@@ -556,10 +559,19 @@
             Next
             Return False
         End Function
-        Public Sub load(ByVal name As String)
+        Public Function getNumLoaded(ByVal name As String) As Integer
+            For i = 0 To count
+                If name = loaded(i) Then
+                    Return i
+                End If
+            Next
+            Return -1
+        End Function
+        Public Function load(ByVal name As String) As Integer
             count += 1
             loaded(count) = name
-        End Sub
+            Return count
+        End Function
     End Class
     Public Sub LoadTextures(ByVal TileSetSize As Integer)
         Dim tex As Bitmap = Bitmap.FromFile("texture.png")
@@ -664,40 +676,40 @@
     Public Function scroolY(ByVal y1 As Integer) As Integer
         Return (y1 - player.y) * 32 + wY
     End Function
-    Public Function readstreamint(ByVal fstream As System.IO.StreamReader) As Integer
-        Dim n As Integer
-        Dim bool As Boolean = False
-        Dim c As Integer
-        While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
-            c = fstream.Read()
-            If c = 45 Then
-                bool = Not bool
-            ElseIf (c <> 32) And (c <> 13) Then
-                n = n * 10 + (c - 48)
-            End If
-        End While
-        If (c = 13) Then
-            c = fstream.Read()
-        End If
-        If bool Then
-            n *= -1
-        End If
-        Return n
-    End Function
-    Public Function readstreamword(ByVal fstream As System.IO.StreamReader) As String
-        Dim s As String = ""
-        Dim c As Integer
-        While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
-            c = fstream.Read()
-            If (c <> 32) And (c <> 13) Then
-                s += Convert.ToChar(c)
-            End If
-        End While
-        If (c = 13) Then
-            c = fstream.Read()
-        End If
-        Return s
-    End Function
+    'Public Function readstreamint(ByVal fstream As System.IO.StreamReader) As Integer
+    '    Dim n As Integer
+    '    Dim bool As Boolean = False
+    '    Dim c As Integer
+    '    While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
+    '        c = fstream.Read()
+    '        If c = 45 Then
+    '            bool = Not bool
+    '        ElseIf (c <> 32) And (c <> 13) Then
+    '            n = n * 10 + (c - 48)
+    '        End If
+    '    End While
+    '    If (c = 13) Then
+    '        c = fstream.Read()
+    '    End If
+    '    If bool Then
+    '        n *= -1
+    '    End If
+    '    Return n
+    'End Function
+    'Public Function readstreamword(ByVal fstream As System.IO.StreamReader) As String
+    '    Dim s As String = ""
+    '    Dim c As Integer
+    '    While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
+    '        c = fstream.Read()
+    '        If (c <> 32) And (c <> 13) Then
+    '            s += Convert.ToChar(c)
+    '        End If
+    '    End While
+    '    If (c = 13) Then
+    '        c = fstream.Read()
+    '    End If
+    '    Return s
+    'End Function
     Public Sub gamesave(Optional ByVal dir As String = "save")
         dir = "saves/" + dir
         IO.Directory.CreateDirectory(dir)
@@ -834,10 +846,12 @@
                 chrset(i) = -1
             Next
             Dim fReader As System.IO.StreamReader = New IO.StreamReader(dir + "charset.txt")
-            n = readstreamint(fReader)
+            'n = readstreamint(fReader)
+            n = fReader.ReadLine
             For i As Integer = 1 To n
                 tmp = fReader.Read()
-                chrset(tmp) = readstreamint(fReader)
+                'chrset(tmp) = readstreamint(fReader)
+                chrset(tmp) = fReader.ReadLine
             Next
             For i As Integer = 0 To sX - 1
                 For j As Integer = 0 To sY - 1
@@ -861,16 +875,48 @@
     Public Sub loadmap(ByVal dir As String, Optional ByVal x As Integer = -1, Optional ByVal y As Integer = -1)
         player.curWorld = dir
         If Not loader.isLoaded(dir) Then
-            loader.load(dir)
+            Dim numLoad As Integer = loader.load(dir)
             dir = "worlds/" + dir + "/"
+            Dim Xd As XDocument = XDocument.Load(dir + "data.xml")
+            'MessageBox.Show(Xd.Element("map").Element("test").Elements.Count)
+            For Each xe As XElement In Xd.Element("map").Element("enemies").Elements
+                enem.spawn(xe.Element("x"), xe.Element("y"), xe.Element("difficulty"))
+            Next
+
+            For Each xe As XElement In Xd.Element("map").Element("items").Elements
+                items.spawnitem(xe.Element("x"), xe.Element("y"), xe.Element("id"), xe.Element("count"))
+            Next
+
+            For Each xe As XElement In Xd.Element("map").Element("doors").Elements
+                doors.create(xe.Element("x"), xe.Element("y"), xe.Element("keyID"), xe.Element("texture"))
+            Next
+
+            For Each xe As XElement In Xd.Element("map").Element("plates").Elements
+                If xe.Element("id") = "3" Then
+                    plate.create(xe.Element("x"), xe.Element("y"), xe.Element("x2"), xe.Element("y2"), xe.Element("id"), xe.Element("posX"), xe.Element("posY"), xe.Element("value"))
+                Else
+                    plate.create(xe.Element("x"), xe.Element("y"), xe.Element("x2"), xe.Element("y2"), xe.Element("id"), xe.Element("value"))
+                End If
+            Next
+            For Each xe As XElement In Xd.Element("map").Element("shops").Elements
+                Dim num As Integer = shops.create(xe.Element("x"), xe.Element("y"), xe.Element("texture"))
+                For Each xe2 As XElement In xe.Elements("items").Elements
+                    shops.addItem(num, New shopItem(xe2.Element("id"), xe2.Element("count"), xe2.Element("cost")))
+                Next
+            Next
+
             'doors.init(dir)
             Dim fReader As System.IO.StreamReader = New IO.StreamReader(dir + "map.txt")
-            Dim n, tmp1, tmp2, tmp3, tmp4, tmp5, tmp7, tmp8 As Integer
-            Dim tmp6 As String
-            sX = readstreamint(fReader)
-            sY = readstreamint(fReader)
-            player.x = readstreamint(fReader) - 1
-            player.y = readstreamint(fReader) - 1
+            sX = Xd.Element("map").Element("info").Element("width")
+            sY = Xd.Element("map").Element("info").Element("height")
+            player.x = Xd.Element("map").Element("info").Element("playerX")
+            player.y = Xd.Element("map").Element("info").Element("playerY")
+
+            loader.bW(numLoad) = sX
+            loader.bH(numLoad) = sY
+            loader.bX(numLoad) = player.x
+            loader.bY(numLoad) = player.y
+
             If (x <> -1) Then
                 player.x = x
             End If
@@ -880,71 +926,17 @@
             For i As Integer = 0 To sY - 1
                 mapStr(i) = fReader.ReadLine()
             Next
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                tmp1 = readstreamint(fReader)
-                tmp2 = readstreamint(fReader)
-                tmp3 = readstreamint(fReader)
-                enem.spawn(tmp1, tmp2, tmp3)
-            Next
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                tmp1 = readstreamint(fReader)
-                tmp2 = readstreamint(fReader)
-                tmp3 = readstreamint(fReader)
-                tmp4 = readstreamint(fReader)
-                items.spawnitem(tmp1, tmp2, tmp3, tmp4)
-            Next
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                tmp1 = readstreamint(fReader)
-                tmp2 = readstreamint(fReader)
-                tmp3 = readstreamint(fReader)
-                tmp4 = readstreamint(fReader)
-                doors.create(tmp1, tmp2, tmp3, tmp4)
-            Next
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                tmp1 = readstreamint(fReader)
-                tmp2 = readstreamint(fReader)
-                tmp7 = readstreamint(fReader)
-                tmp8 = readstreamint(fReader)
-                tmp3 = readstreamint(fReader)
-                If tmp3 = 3 Then
-                    'tmp6 = fReader.ReadLine
-                    tmp6 = readstreamword(fReader)
-                    tmp4 = readstreamint(fReader)
-                    tmp5 = readstreamint(fReader)
-                Else
-                    tmp4 = readstreamint(fReader)
-                    tmp5 = 0
-                    tmp6 = ""
-                End If
-                plate.create(tmp1, tmp2, tmp7, tmp8, tmp3, tmp4, tmp5, tmp6)
-            Next
-            n = Int(fReader.ReadLine()) - 1
-            For i As Integer = 0 To n
-                tmp1 = readstreamint(fReader)
-                tmp2 = readstreamint(fReader)
-                tmp8 = readstreamint(fReader)
-                tmp3 = readstreamint(fReader) - 1
-                Dim num As Integer = shops.create(tmp1, tmp2, tmp8)
-                For j As Integer = 0 To tmp3
-                    tmp4 = readstreamint(fReader)
-                    tmp5 = readstreamint(fReader)
-                    tmp7 = readstreamint(fReader)
-                    shops.addItem(num, New shopItem(tmp4, tmp5, tmp7))
-                Next
-            Next
             fReader.Close()
             initmap(sX, sY, dir)
         Else
+            Dim numLoad As Integer = loader.getNumLoaded(dir)
             dir = "worlds/" + dir + "/"
             Dim fReader As System.IO.StreamReader = New IO.StreamReader(dir + "map.txt")
-            sX = readstreamint(fReader)
-            sY = readstreamint(fReader)
-            player.x = readstreamint(fReader) - 1
-            player.y = readstreamint(fReader) - 1
+            sX = loader.bW(numLoad)
+            sY = loader.bH(numLoad)
+            player.x = loader.bX(numLoad)
+            player.y = loader.bY(numLoad)
+
             If (x <> -1) Then
                 player.x = x
             End If
@@ -985,47 +977,6 @@
         'For i As Integer = 0 To 91
         'inv.additem(i, 1)
         'Next
-        'Dim tmp As XElement = XElement.Load("test.xml")
-        'Dim tr As System.Xml.XmlReader = tmp.CreateReader
-        'Console.WriteLine(tmp.Name)
-        'tmp = tmp.
-        'Console.WriteLine(tmp.Name)
-
-        Dim reader As Xml.XmlReader = Xml.XmlReader.Create("test.xml")
-        'While reader.Read()
-        '    If reader.IsStartElement() Then
-        '        If reader.IsEmptyElement Then
-        '            Console.WriteLine("<{0}/>", reader.Name)
-        '        Else
-        '            Console.Write("<{0}> ", reader.Name)
-        '            reader.Read() ' Read the start tag.
-        '            If reader.IsStartElement() Then ' Handle nested elements.
-        '                Console.Write(vbCr + vbLf + "<{0}>", reader.Name)
-        '            End If
-        '            Console.Write(reader.ReadString()) 'Read the text content of the element.
-        '            Console.WriteLine("</{0}> ", reader.Name)
-        '        End If
-        '    Else
-        '        Console.WriteLine("</{0}>", reader.Name)
-        '    End If
-        'End While
-
-        reader.ReadToFollowing("enemies")
-        Dim classReader As Xml.XmlReader = reader.ReadSubtree()
-        While Not classReader.ReadToFollowing("enemy")
-            Dim mreader As Xml.XmlReader = classReader.ReadSubtree()
-            Dim x, y, dif As Integer
-            mreader.ReadToFollowing("x")
-            x = mreader.ReadString()
-            'Console.WriteLine("!{0}={1}!", mreader.Name, x)
-            mreader.ReadToFollowing("y")
-            y = mreader.ReadString()
-            dif = mreader.ReadToFollowing("difficult")
-            dif = mreader.ReadString()
-            'MessageBox.Show(x.ToString + " " + y.ToString + " " + dif.ToString)
-            'reader.
-            'Console.Write("!{0}!", mreader.Name)
-        End While
         'tmp
         Timer1.Interval = 10
         Timer1.Start()
