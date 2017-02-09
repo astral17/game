@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Players xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <version>1.0.0pre-2</version>
+  <x>1</x>
+  <y>1</y>
+  <stepCD>0</stepCD>
+  <money>0</money>
+  <gamestate>normal</gamestate>
+  <curWorld>main</curWorld>
+</Players>

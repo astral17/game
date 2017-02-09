@@ -1,11 +1,12 @@
 ﻿Public Class Form1
-    Public version = "1.0.0pre-1"
+    Public version = "1.0.0pre-2"
     Public sX, sY, wX, wY, wordscount As Integer
     Public kUp, kDown, kLeft, kRight As Boolean
     Public godMode As Boolean = False
     Public str As String
     Public tileset(99) As Bitmap
     Public itemtex(99) As Bitmap
+    Public effecttex(99) As Bitmap
     Public words(99) As String
     Dim map(99, 99) As BlockType
     Public mapStr(99) As String
@@ -51,10 +52,20 @@
     End Class
 
     <Serializable()>
+    Public Structure doorStruct
+        Public x, y, id, tex As Integer
+        Public world As String
+        Public Sub New(ByVal x1 As Integer, y1 As Integer, id1 As Integer, tex1 As Integer, world1 As String)
+            x = x1
+            y = y1
+            id = id1
+            tex = tex1
+            world = world1
+        End Sub
+    End Structure
+    <Serializable()>
     Public Class Door
-        Public dX(99), dY(99), id(99), tex(99) As Integer
-        Public world(99) As String
-        Public count As Integer = -1
+        Public d As New List(Of doorStruct)
         Public Function CanStep(ByVal dir As Integer) As Boolean
             Dim x1, y1 As Integer
             x1 = Form1.player.x
@@ -71,93 +82,126 @@
             If dir = 4 Then
                 x1 += 1
             End If
-            For i As Integer = 0 To count
-                If (dX(i) = x1 And dY(i) = y1 And world(i) = Form1.player.curWorld) Then
-                    If (Form1.inv.searchItem(8) <> -1) Then 'masterkey
-                        dX(i) = -1
-                        dY(i) = -1
-                        tex(i) = -1
-                        Return True
-                    End If
-                    If (Form1.inv.searchItem(id(i)) = -1) Then
-                        Return False
-                    Else
-                        dX(i) = -1
-                        dY(i) = -1
-                        tex(i) = -1
-                        Form1.inv.subitem(id(i), 1)
-                        Return True
-                    End If
+            'System.Console.WriteLine(d.Contains(New doorStruct(x1, y1, vbNull, vbNull, "main")))
+            'System.Console.WriteLine(d.FindIndex(Function(x) (x.x = x1) And (x.y = y1) And (x.world = Form1.player.curWorld)))
+
+            Dim tlist = d.FindAll(Function(x) (x.x = x1) And (x.y = y1) And (x.world = Form1.player.curWorld))
+            For Each x As doorStruct In tlist
+                If (Form1.inv.searchItem(8) <> -1) Then 'masterkey
+                    d.Remove(x)
+                    Return True
+                End If
+                If (Form1.inv.searchItem(x.id) = -1) Then
+                    Return False
+                Else
+                    d.Remove(x)
+                    Form1.inv.subItem(x.id, 1)
+                    Return True
                 End If
             Next
+            'For i As Integer = 0 To d.Count - 1
+            '    If (d(i).x = x1 And d(i).y = y1 And d(i).world = Form1.player.curWorld) Then
+            '        If (Form1.inv.searchItem(8) <> -1) Then 'masterkey
+            '            d.RemoveAt(i)
+            '            Return True
+            '        End If
+            '        If (Form1.inv.searchItem(d(i).id) = -1) Then
+            '            Return False
+            '        Else
+            '            d.RemoveAt(i)
+            '            Form1.inv.subItem(d(i).id, 1)
+            '            Return True
+            '        End If
+            '    End If
+            'Next
             Return True
         End Function
         Public Sub create(ByVal x As Integer, y As Integer, vid As Integer, vtex As Integer)
-            count += 1
-            dX(count) = x
-            dY(count) = y
-            id(count) = vid
-            tex(count) = vtex
-            world(count) = Form1.player.curWorld
+            d.Add(New doorStruct(x, y, vid, vtex, Form1.player.curWorld))
         End Sub
     End Class
     <Serializable()>
     Public Structure itemobj
         Public id, count, x, y, tex As Integer
         Public world As String
+        Public Sub New(id1 As Integer, x1 As Integer, y1 As Integer, count1 As Integer, tex1 As Integer, world1 As String)
+            id = id1
+            count = count1
+            x = x1
+            y = y1
+            tex = tex1
+            world = world1
+        End Sub
     End Structure
     <Serializable()>
     Public Class item
-        Public name(99), type(99), desc(99) As String
-        Public tex(99), eff(99), dureff(99), poweff(99) As Integer
-        Public isUsable(99) As Boolean
-        Public world(99) As String
-        Public item(99) As itemobj
-        Public count As Integer = -1
+        Public name As New List(Of String)
+        Public type As New List(Of String)
+        Public desc As New List(Of String)
+        Public tex As New List(Of Integer)
+        Public eff As New List(Of Integer)
+        Public dureff As New List(Of Integer)
+        Public poweff As New List(Of Integer)
+        Public isUsable As New List(Of Boolean)
+        Public world As New List(Of String)
+        Public item As New List(Of itemobj)
+        'Public count As Integer = -1
         Public Sub init()
             Dim Xd As XDocument = XDocument.Load("items.xml")
             'MessageBox.Show(Xd.Element("map").Element("test").Elements.Count)
             'item[name,type,desc,tex,eff[dureff,poweff,usable]]
-            Dim i As Integer = -1
+            'Dim i As Integer = -1
             For Each xe As XElement In Xd.Elements("items").Elements
-                i = i + 1
-                name(i) = xe.Element("name")
-                type(i) = xe.Element("type")
-                desc(i) = xe.Element("description")
-                tex(i) = xe.Element("texture")
-                eff(i) = xe.Element("effectID")
+                'i = i + 1
+                name.Add(xe.Element("name"))
+                type.Add(xe.Element("type"))
+                desc.Add(xe.Element("description"))
+                tex.Add(xe.Element("texture"))
+                eff.Add(xe.Element("effectID"))
                 If xe.Element("effectID") <> "0" Then
-                    dureff(i) = xe.Element("duration")
-                    poweff(i) = xe.Element("power")
+                    dureff.Add(xe.Element("duration"))
+                    poweff.Add(xe.Element("power"))
                     Dim t As Integer
                     t = xe.Element("usable")
                     If t = 0 Then
-                        isUsable(i) = False
+                        isUsable.Add(False)
                     Else
-                        isUsable(i) = True
+                        isUsable.Add(True)
                     End If
                 Else
+                    dureff.Add(0)
+                    poweff.Add(0)
+                    isUsable.Add(True)
                 End If
             Next
         End Sub
         Public Sub spawnitem(ByVal x As Integer, y As Integer, id As Integer, counti As Integer)
-            count += 1
-            item(count).id = id
-            item(count).x = x
-            item(count).y = y
-            item(count).count = counti
-            item(count).tex = tex(id)
-            item(count).world = Form1.player.curWorld
+            item.Add(New itemobj(id, x, y, counti, tex(id), Form1.player.curWorld))
         End Sub
     End Class
     <Serializable()>
     Public Structure slots
         Public id, count, tex As Integer
+        Public Sub New(ByVal id1 As Integer, count1 As Integer, tex1 As Integer)
+            id = id1
+            count = count1
+            tex = tex1
+        End Sub
     End Structure
+    Public Class moreBar
+        Public selected As Integer = -1
+        Public tex As New List(Of Integer)
+        Public text As New List(Of String)
+        Public Sub init()
+
+        End Sub
+        Public Sub add(ByVal texture As Integer, text As String)
+
+        End Sub
+    End Class
     <Serializable()>
     Public Class inventory
-        Public slot(99) As slots
-        Public count As Integer = -1
+        Public slot As New List(Of slots)
         Public open As Boolean = False
         Public selected As Integer = -1
         Public desc As String = ""
@@ -167,66 +211,46 @@
                 Form1.player.money += countitem
                 Return
             End If
-            Dim t As Boolean = True
-            For i As Integer = 0 To count
-                If slot(i).id = id Then
-                    t = False
-                    slot(i).count += countitem
+
+            Dim i As Integer = slot.FindIndex(Function(x) x.id = id)
+            If i <> -1 Then
+                Dim x = slot(i)
+                x.count += countitem
+                slot(i) = x
+            Else
+                slot.Add(New slots(id, countitem, 1))
+                If Not (Form1.items.isUsable(slot(slot.Count - 1).id)) Then
+                    useItem(slot.Count - 1)
                 End If
-            Next
-            If t Then
-                count += 1
-                slot(count).id = id
-                slot(count).count = countitem
-                Dim x As Boolean = Form1.items.isUsable(count)
-                If Not (Form1.items.isUsable(slot(count).id)) Then
-                    useItem(count)
-                End If
+                'Debug.Fail("imposible point of code")
             End If
         End Sub
         Public Sub subItem(ByVal id As Integer, itemCount As Integer)
-            Dim t As Boolean = False
-            For i As Integer = 0 To count
-                If t Then
-                    slot(i - 1) = slot(i)
-                ElseIf slot(i).id = id Then
-                    slot(i).count -= itemCount
-                    If slot(i).count <= 0 Then
-                        If Not Form1.items.isUsable(slot(i).id) Then
-                            Dim idEff = Form1.items.eff(slot(i).id)
-                            Dim poweff = Form1.items.poweff(slot(i).id)
-                            Form1.effect.remove(idEff, poweff)
-                        End If
-                        t = True
+            Dim i As Integer = slot.FindIndex(Function(x) x.id = id)
+            If i <> -1 Then
+                If slot(i).count > itemCount Then
+                    Dim x As slots = slot(i)
+                    x.count -= itemCount
+                    slot(i) = x
+                Else
+                    If Not Form1.items.isUsable(slot(i).id) Then
+                        Dim idEff = Form1.items.eff(slot(i).id)
+                        Dim poweff = Form1.items.poweff(slot(i).id)
+                        Form1.effect.remove(idEff, poweff)
                     End If
+                    slot.RemoveAt(i)
                 End If
-            Next
-            If t Then
-                slot(count).id = 0
-                slot(count).count = 0
-                slot(count).tex = 0
-                count -= 1
             End If
         End Sub
         Public Sub subItemFromSlot(ByVal num As Integer, countitem As Integer)
-            If (num < 0 Or num > count) Then
-                Return
-            End If
-            If slot(num).count <= 0 Then
-                Return
-            End If
-            If slot(num).count <= countitem Then
-                If Not Form1.items.isUsable(slot(num).id) Then
-                    Dim idEff = Form1.items.eff(slot(num).id)
-                    Dim poweff = Form1.items.poweff(slot(num).id)
-                    Form1.effect.remove(idEff, poweff)
+            If num <> -1 Then
+                If slot(num).count > countitem Then
+                    Dim x As slots = slot(num)
+                    x.count -= countitem
+                    slot(num) = x
+                Else
+                    slot.RemoveAt(num)
                 End If
-                For i As Integer = num + 1 To count
-                    slot(i - 1) = slot(i)
-                Next
-                count -= 1
-            Else
-                slot(num).count -= countitem
             End If
         End Sub
         Public Function useItem(ByVal slotNum As Integer) As Boolean
@@ -240,19 +264,16 @@
             Dim dureff = Form1.items.dureff(slot(slotNum).id)
             Dim poweff = Form1.items.poweff(slot(slotNum).id)
             Dim isUsable = Form1.items.isUsable(slot(slotNum).id)
-            Form1.effect.add(idEff, dureff, poweff, slot(slotNum).id, isUsable)
+            Form1.effect.add(idEff, dureff, poweff, idEff, isUsable)
             Return True
         End Function
         Public Function getSlot(ByVal n As Integer) As slots
             Return slot(n)
         End Function
         Public Function searchItem(ByVal id As Integer)
-            For i As Integer = 0 To count
-                If slot(i).id = id Then
-                    Return i
-                End If
-            Next
-            Return -1
+            Dim i As Integer = slot.FindIndex(Function(x) x.id = id)
+
+            Return i
         End Function
     End Class
     <Serializable()>
@@ -316,78 +337,113 @@
         End Sub
     End Class
     <Serializable()>
+    Public Structure effectStruct
+        Public id, dur, pow, tex As Integer
+        Public isTemp As Boolean
+        Public Sub New(ByVal id1 As Integer, dur1 As Integer, pow1 As Integer, tex1 As Integer, isTemp1 As Boolean)
+            id = id1
+            dur = dur1
+            pow = pow1
+            tex = tex1
+            isTemp = isTemp1
+        End Sub
+    End Structure
+    <Serializable()>
     Public Class Effects  'id dur pow temp
-        Public id(99) As Integer, dur(99) As Integer, pow(99) As Integer, isTemp(99) As Boolean, tex(99) As Integer, showDesc(99) As Boolean
+        Public e As New List(Of effectStruct)
+        Public desc As New List(Of String)
         Public selected As Integer = -1
-        Public count As Integer = -1
-        Public Sub add(ByVal id1 As Integer, dur1 As Integer, pow1 As Integer, itemID As Integer, Optional ByVal isTemp1 As Boolean = True)
-            count += 1
-            id(count) = id1
-            dur(count) = dur1
-            pow(count) = pow1
-            tex(count) = Form1.items.tex(itemID)
-            showDesc(count) = False
-            isTemp(count) = isTemp1
+        Public Sub init()
+            Dim Xd As XDocument = XDocument.Load("effects.xml")
+            For Each xe As XElement In Xd.Elements("effects").Elements
+                desc.Add(xe.Value)
+            Next
+        End Sub
+        Public Sub add(ByVal id1 As Integer, dur1 As Integer, pow1 As Integer, tex1 As Integer, Optional ByVal isTemp1 As Boolean = True)
+            'count += 1
+            e.Add(New effectStruct(id1, dur1, pow1, tex1, isTemp1))
+            'id.Add(id1)
+            'dur.Add(dur1)
+            'pow.Add(pow1)
+            'tex.Add(tex1) 'Form1.items.tex(itemID)
+            'showDesc.Add(False)
+            'isTemp.Add(isTemp1)
         End Sub
         Public Sub remove(ByVal id1 As Integer, Optional ByVal pow1 As Integer = -1)
-            Dim t As Boolean = False
-            For i As Integer = 0 To count
-                If (t) And (i > 0) Then
-                    id(i - 1) = id(i)
-                    dur(i - 1) = dur(i)
-                    pow(i - 1) = pow(i)
-                    tex(i - 1) = tex(i)
-                    showDesc(i - 1) = showDesc(i)
-                    isTemp(i - 1) = isTemp(i)
-                End If
-                If (id(i) = id1) And ((pow1 = -1) Or (pow(i) = pow1)) Then
-                    t = True
-                End If
-            Next
-            If t Then
-                count -= 1
+            Dim i As Integer = e.FindIndex(Function(x) (x.id = id1) And ((x.pow = pow1) Or (pow1 = -1)))
+            If i <> -1 Then
+                e.RemoveAt(i)
             End If
+            'Dim t As Boolean = False
+            'For i As Integer = 0 To id.Count
+            '    If (t) And (i > 0) Then
+            '        id(i - 1) = id(i)
+            '        dur(i - 1) = dur(i)
+            '        pow(i - 1) = pow(i)
+            '        tex(i - 1) = tex(i)
+            '        showDesc(i - 1) = showDesc(i)
+            '        isTemp(i - 1) = isTemp(i)
+            '    End If
+            '    If (id(i) = id1) And ((pow1 = -1) Or (pow(i) = pow1)) Then
+            '        t = True
+            '    End If
+            'Next
+            'If t Then
+            '    count -= 1
+            'End If
         End Sub
         Public Sub removeByNum(ByVal num As Integer)
-            For i As Integer = num To count
-                If i > num Then
-                    id(i - 1) = id(i)
-                    dur(i - 1) = dur(i)
-                    pow(i - 1) = pow(i)
-                    tex(i - 1) = tex(i)
-                    showDesc(i - 1) = showDesc(i)
-                    isTemp(i - 1) = isTemp(i)
-                End If
-            Next
-            count -= 1
+            If num <> -1 Then
+                e.RemoveAt(num)
+            End If
+            'For i As Integer = num To count
+            '    If i > num Then
+            '        id(i - 1) = id(i)
+            '        dur(i - 1) = dur(i)
+            '        pow(i - 1) = pow(i)
+            '        tex(i - 1) = tex(i)
+            '        showDesc(i - 1) = showDesc(i)
+            '        isTemp(i - 1) = isTemp(i)
+            '    End If
+            'Next
+            'count -= 1
         End Sub
         Public Function search(ByVal id1 As Integer) As Integer
             Dim max As Integer = -1
-            For i As Integer = 0 To count
-                If id(i) = id1 Then
-                    max = Math.Max(pow(i), max)
+            For i As Integer = 0 To e.Count - 1
+                If e(i).id = id1 Then
+                    max = Math.Max(e(i).pow, max)
                 End If
             Next
             Return max
         End Function
         Public Sub upTime()
-            For i As Integer = 0 To count
-                If isTemp(i) Then
-                    dur(i) -= 1
-                End If
-                'Case 1 undead обработка там где лава
-                'Case 2 incAttack
-                'Case 3 reincarnation
-                If id(i) = 3 Then
-                    Form1.player.stepCD = 0
-                    add(1, 300, 1, 0, True)
-                End If
-                'Case 4 waterbreath
-            Next
+            If e.Count <> 0 Then
+                'For Each x As effectStruct In e
+                'remove KOSTIL!!
+                For i As Integer = 0 To e.Count - 1
+                    If e(i).isTemp Then
+                        'Dim i = e.FindIndex(Function(zn) (zn.id = x.id) And (zn.dur = x.dur) And (zn.pow = x.pow) And (zn.isTemp = x.isTemp) And (zn.tex = x.tex))
+                        Dim x As effectStruct = e(i)
+                        x.dur -= 1
+                        e(i) = x
+                        'e(i).dur -= 1
+                        'e(i) = x
+                    End If
+                    'Case 1 undead обработка там где лава
+                    'Case 2 incAttack
+                    'Case 3 reincarnation
+                    'If x.id = 3 Then
+                    '    Form1.player.stepCD = 0
+                    '    add(1, 300, 1, 3, True)
+                    'End If
+                    'Case 4 waterbreath
+                Next
+            End If
             Dim offset As Integer = 0
-            Dim ocount = count
-            For i As Integer = 0 To ocount
-                If dur(i - offset) < 1 Then
+            Dim ocount = e.Count
+            For i As Integer = 0 To ocount - 1
+                If e(i - offset).dur < 1 Then
                     removeByNum(i - offset)
                     offset += 1
                 End If
@@ -398,33 +454,54 @@
     Public Structure action
         Public id, val, val2 As Integer
         Public valS As String
+        Public Sub New(ByVal id1 As Integer, val1 As Integer, val21 As Integer, valS1 As String)
+            id = id1
+            val = val1
+            val2 = val21
+            valS = valS1
+        End Sub
+    End Structure
+    <Serializable()>
+    Public Structure plateStruct
+        Public x, y, x2, y2 As Integer
+        Public ac As action
+        Public world As String
+        Public Sub New(ByVal x1 As Integer, y1 As Integer, x21 As Integer, y21 As Integer, world1 As String, ac1 As action)
+            x = x1
+            y = y1
+            x2 = x21
+            y2 = y21
+            world = world1
+            ac = ac1
+        End Sub
     End Structure
     <Serializable()>
     Public Class plates
-        Dim p(99) As Point, p2(99) As Point
-        Dim ac(99) As action
-        Public world(99) As String
-        Public count As Integer = -1
+        Public e As New List(Of plateStruct)
+        'Dim p(99) As Point, p2(99) As Point
+        'Dim ac(99) As action
+        'Public world(99) As String
+        'Public count As Integer = -1
         Public update As Boolean = True
         Public Sub runPlate(ByVal n As Integer)
-            If (ac(n).id = 0) And (ac(n).val = 0) Then
+            If (e(n).ac.id = 0) And (e(n).ac.val = 0) Then
                 Form1.unpressarrows()
                 MessageBox.Show("testbox")
             End If
-            Select Case ac(n).id
+
+            Select Case e(n).ac.id
                 Case 0 'remove messageBox with val id
-                    If ac(n).val = 1 Then
-                        ac(n).id = -1
-                        ac(n - 1).id = -1
-                    End If
+                    e.RemoveAt(n)
+                    'e(n).ac.id = -1
+                    'e(n - 1).ac.id = -1
                 Case 1 'set step chance
-                    Form1.enem.stepChance = ac(n).val
+                    Form1.enem.stepChance = e(n).ac.val
                 Case 2 'set step difficult
-                    Form1.enem.stepDif = ac(n).val
+                    Form1.enem.stepDif = e(n).ac.val
                 Case 3 'teleport to val world
                     Dim tmp1, tmp2 As Integer
-                    tmp1 = ac(n).val
-                    tmp2 = ac(n).val2
+                    tmp1 = e(n).ac.val
+                    tmp2 = e(n).ac.val2
                     If tmp1 = -2 Then
                         tmp1 = Form1.player.x
                     End If
@@ -437,26 +514,17 @@
                     If tmp2 = -3 Then
                         tmp2 = Form1.player.y
                     End If
-                    Form1.loadmap(ac(n).valS, tmp1, tmp2)
+                    Form1.loadmap(e(n).ac.valS, tmp1, tmp2)
             End Select
         End Sub
         Public Sub create(ByVal x As Integer, y As Integer, x2 As Integer, y2 As Integer, id As Integer, val As Integer, Optional ByVal val2 As Integer = 0, Optional ByVal valS As String = "")
-            count += 1
-            p(count).X = x
-            p(count).Y = y
-            p2(count).X = x2
-            p2(count).Y = y2
-            ac(count).id = id
-            ac(count).val = val
-            ac(count).val2 = val2
-            ac(count).valS = valS
-            world(count) = Form1.player.curWorld
+            e.Add(New plateStruct(x, y, x2, y2, Form1.player.curWorld, New action(id, val, val2, valS)))
         End Sub
         Public Sub test(ByVal x As Integer, y As Integer)
             If update Then
                 update = False
-                For i As Integer = 0 To count
-                    If (form1.inRect(x, y, p(i).X, p(i).Y, p2(i).X, p2(i).Y)) And (world(i) = Form1.player.curWorld) Then
+                For i As Integer = e.Count - 1 To 0 Step -1
+                    If (Form1.inRect(x, y, e(i).x, e(i).y, e(i).x2, e(i).y2)) And (e(i).world = Form1.player.curWorld) Then
                         runPlate(i)
                     End If
                 Next
@@ -464,52 +532,63 @@
         End Sub
     End Class
     <Serializable()>
+    Public Structure enemyStruct
+        Public x, y, dif As Integer
+        Public world As String
+        Public Sub New(ByVal x1 As Integer, y1 As Integer, dif1 As Integer, world1 As String)
+            x = x1
+            y = y1
+            dif = dif1
+            world = world1
+        End Sub
+    End Structure
+    <Serializable()>
     Public Class enemy
-
-        Dim p(100) As Point
-        Public dif(100) As Integer
-        Public world(100) As String
-        Dim mcount As Integer = -1
+        Public e As New List(Of enemyStruct)
         Public stepChance As Integer = 0
         Public stepDif As Integer = 2
         Public curBattle As Integer = -1
+        Public curDif As Integer = 0
         Public update As Boolean = False
-        Public Property count As Integer
-            Get
-                Return mcount
-            End Get
-            Set(value As Integer)
-                mcount = value
-            End Set
-        End Property
+        'Public Property count As Integer
+        '    Get
+        '        Return mcount
+        '    End Get
+        '    Set(value As Integer)
+        '        mcount = value
+        '    End Set
+        'End Property
 
         Public Sub spawn(ByVal x As Integer, y As Integer, diff As Integer)
-            mcount += 1
-            p(mcount).X = x
-            p(mcount).Y = y
-            dif(mcount) = diff
-            world(mcount) = Form1.player.curWorld
+            'mcount += 1
+            e.Add(New enemyStruct(x, y, diff, Form1.player.curWorld))
+            'p(mcount).X = x
+            'p(mcount).Y = ys
+            'dif(mcount) = diff
+            'world(mcount) = Form1.player.curWorld
 
         End Sub
         Public Sub kill(ByVal n As Integer)
-            For i As Integer = n To mcount - 1
-                p(i) = p(i + 1)
-                dif(i) = dif(i + 1)
-            Next
-            mcount -= 1
+            e.RemoveAt(n)
+            'For i As Integer = n To mcount - 1
+            '    p(i) = p(i + 1)
+            '    dif(i) = dif(i + 1)
+            'Next
+            'mcount -= 1
         End Sub
-        Public Function getX(ByVal n As Integer) As Integer
-            Return p(n).X
-        End Function
-        Public Function getY(ByVal n As Integer) As Integer
-            Return p(n).Y
-        End Function
         'Public Function getSt(ByVal n As Integer) As Integer
         '    Return state(n)
         'End Function
         Public Sub test(ByVal x As Integer, y As Integer)
-            For i As Integer = 0 To mcount
-                If (p(i).X = x And p(i).Y = y And world(i) = Form1.player.curWorld) Then
+            'Dim tlist = e.FindAll(Function(x) (x.x = x) And (x.y = y))
+            ''System.Console.WriteLine(tlist.Count)
+            'If tlist.Count <> 0 Then
+            '    For Each xe As itemobj In tlist
+            '        battle(i)
+            '    Next
+            'End If
+            For i As Integer = e.Count - 1 To 0 Step -1
+                If (e(i).x = x And e(i).y = y And e(i).world = Form1.player.curWorld) Then
                     battle(i)
                 End If
             Next
@@ -523,11 +602,11 @@
                 update = False
                 If Form1.rand(1, 100) <= stepChance Then
                     spawn(x, y, stepDif)
-                    battle(mcount)
+                    battle(e.Count - 1)
                 End If
             End If
         End Sub
-        Public Sub battle(ByVal n As Integer)
+        Public Sub battle(ByRef n As Integer)
             If Form1.godMode Then '!g
                 Return '!g
             End If '!g
@@ -535,11 +614,12 @@
             If Form1.effect.search(2) > -1 Then
                 tmp -= Form1.effect.search(2)
             End If
-            If dif(n) + tmp < 1 Then
+            If e(n).dif + tmp < 1 Then
                 kill(n)
                 Form1.player.money += 1
             Else
-                dif(n) += tmp
+                'e(n).dif += tmp
+                curDif = e(n).dif + tmp
                 curBattle = n
                 game.Form1.player.gamestate = "battleInit"
             End If
@@ -548,11 +628,13 @@
     End Class
     <Serializable()>
     Public Class Loading
-        Public loaded(99) As String
-        Public bW(99), bH(99), bX(99), bY(99) As Integer
-        Public count As Integer = -1
+        Public loaded As New List(Of String)
+        Public bW As New List(Of Integer)
+        Public bH As New List(Of Integer)
+        Public bX As New List(Of Integer)
+        Public bY As New List(Of Integer)
         Public Function isLoaded(ByVal name As String) As Boolean
-            For i = 0 To count
+            For i As Integer = 0 To loaded.Count - 1
                 If name = loaded(i) Then
                     Return True
                 End If
@@ -560,7 +642,7 @@
             Return False
         End Function
         Public Function getNumLoaded(ByVal name As String) As Integer
-            For i = 0 To count
+            For i As Integer = 0 To loaded.Count - 1
                 If name = loaded(i) Then
                     Return i
                 End If
@@ -568,10 +650,15 @@
             Return -1
         End Function
         Public Function load(ByVal name As String) As Integer
-            count += 1
-            loaded(count) = name
-            Return count
+            loaded.Add(name)
+            Return loaded.Count
         End Function
+        Public Sub addInfo(ByVal sx, sy, px, py)
+            bW.Add(sx)
+            bH.Add(sy)
+            bX.Add(px)
+            bY.Add(py)
+        End Sub
     End Class
     Public Sub LoadTextures(ByVal TileSetSize As Integer)
         Dim tex As Bitmap = Bitmap.FromFile("texture.png")
@@ -588,6 +675,14 @@
                 itemtex(j * 6 + i) = New Bitmap(TileSetSize, TileSetSize)
                 Dim g As Graphics = Graphics.FromImage(itemtex(j * 6 + i))
                 g.DrawImage(tex2, New Rectangle(0, 0, TileSetSize, TileSetSize), New Rectangle(i * TileSetSize, j * TileSetSize, TileSetSize, TileSetSize), GraphicsUnit.Pixel)
+            Next
+        Next
+        Dim tex3 As Bitmap = Bitmap.FromFile("effects.png")
+        For i As Integer = 0 To 5
+            For j As Integer = 0 To 5
+                effecttex(j * 6 + i + 1) = New Bitmap(TileSetSize, TileSetSize)
+                Dim g As Graphics = Graphics.FromImage(effecttex(j * 6 + i + 1))
+                g.DrawImage(tex3, New Rectangle(0, 0, TileSetSize, TileSetSize), New Rectangle(i * TileSetSize, j * TileSetSize, TileSetSize, TileSetSize), GraphicsUnit.Pixel)
             Next
         Next
     End Sub
@@ -624,7 +719,7 @@
             Case Keys.Q
                 If tmp Then
                     Dim cfd = 1
-                    If (e.Shift And (inv.selected >= 0 And inv.selected <= inv.count)) Then
+                    If (e.Shift And (inv.selected >= 0 And inv.selected <= inv.slot.Count)) Then
                         cfd = inv.slot(inv.selected).count
                     End If
                     inv.subItemFromSlot(inv.selected, cfd)
@@ -642,10 +737,8 @@
                 loadmap(player.curWorld, player.x, player.y)
             Case Keys.Y
                 loadmap("cave2")
-            Case Keys.U
-                shops.buyItem(0, 0, 1)
-            Case Keys.I
-                shops.sellItem(0, 0, 1)
+            Case Keys.O
+                player.stepCD = 0
             Case Keys.C
                 MessageBox.Show(player.x.ToString + " " + player.y.ToString)
             Case Keys.Z
@@ -676,90 +769,65 @@
     Public Function scroolY(ByVal y1 As Integer) As Integer
         Return (y1 - player.y) * 32 + wY
     End Function
-    'Public Function readstreamint(ByVal fstream As System.IO.StreamReader) As Integer
-    '    Dim n As Integer
-    '    Dim bool As Boolean = False
-    '    Dim c As Integer
-    '    While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
-    '        c = fstream.Read()
-    '        If c = 45 Then
-    '            bool = Not bool
-    '        ElseIf (c <> 32) And (c <> 13) Then
-    '            n = n * 10 + (c - 48)
-    '        End If
-    '    End While
-    '    If (c = 13) Then
-    '        c = fstream.Read()
-    '    End If
-    '    If bool Then
-    '        n *= -1
-    '    End If
-    '    Return n
-    'End Function
-    'Public Function readstreamword(ByVal fstream As System.IO.StreamReader) As String
-    '    Dim s As String = ""
-    '    Dim c As Integer
-    '    While (c <> 32) And (c <> 13) And (fstream.EndOfStream = False)
-    '        c = fstream.Read()
-    '        If (c <> 32) And (c <> 13) Then
-    '            s += Convert.ToChar(c)
-    '        End If
-    '    End While
-    '    If (c = 13) Then
-    '        c = fstream.Read()
-    '    End If
-    '    Return s
-    'End Function
     Public Sub gamesave(Optional ByVal dir As String = "save")
         dir = "saves/" + dir
         IO.Directory.CreateDirectory(dir)
 
         Dim TestFileStream As IO.Stream = IO.File.Create(dir + "/enemy.dat")
-        Dim serializer As New Runtime.Serialization.Formatters.Binary.BinaryFormatter
+        Dim serializer As New Xml.Serialization.XmlSerializer(enem.GetType)
         serializer.Serialize(TestFileStream, enem)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/player.dat")
+        serializer = New Xml.Serialization.XmlSerializer(player.GetType)
         serializer.Serialize(TestFileStream, player)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/doors.dat")
+        serializer = New Xml.Serialization.XmlSerializer(doors.GetType)
         serializer.Serialize(TestFileStream, doors)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/items.dat")
+        serializer = New Xml.Serialization.XmlSerializer(items.GetType)
         serializer.Serialize(TestFileStream, items)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/inv.dat")
+        serializer = New Xml.Serialization.XmlSerializer(inv.GetType)
         serializer.Serialize(TestFileStream, inv)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/effect.dat")
+        serializer = New Xml.Serialization.XmlSerializer(effect.GetType)
         serializer.Serialize(TestFileStream, effect)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/plates.dat")
+        serializer = New Xml.Serialization.XmlSerializer(plate.GetType)
         serializer.Serialize(TestFileStream, plate)
         TestFileStream.Close()
 
         TestFileStream = IO.File.Create(dir + "/loader.dat")
+        serializer = New Xml.Serialization.XmlSerializer(loader.GetType)
         serializer.Serialize(TestFileStream, loader)
         TestFileStream.Close()
     End Sub
     Public Sub gameload(Optional ByVal dir As String = "save")
         unpressarrows()
-        '
         Dim filename As String
-        'Dim ocWorld = player.curWorld
         Dim deserializer As New Runtime.Serialization.Formatters.Binary.BinaryFormatter
+
         dir = "saves/" + dir
         Dim tmpPlayer = New Players
         filename = "player.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            tmpPlayer = CType(deserializer.Deserialize(TestFileStream), Players)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(Players))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            tmpPlayer = CType( _
+            mySerializer.Deserialize(myFileStream), Players)
+            myFileStream.Close()
         End If
         If Not tmpPlayer.testVersion() Then
             If tmpPlayer.version = "" Then
@@ -772,45 +840,66 @@
         End If
         filename = "enemy.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            enem = CType(deserializer.Deserialize(TestFileStream), enemy)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(enemy))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            enem = CType( _
+            mySerializer.Deserialize(myFileStream), enemy)
+            myFileStream.Close()
         End If
         filename = "doors.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            doors = CType(deserializer.Deserialize(TestFileStream), Door)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(Door))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            doors = CType( _
+            mySerializer.Deserialize(myFileStream), Door)
+            myFileStream.Close()
         End If
         filename = "items.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            items = CType(deserializer.Deserialize(TestFileStream), item)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(item))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            items = CType( _
+            mySerializer.Deserialize(myFileStream), item)
+            myFileStream.Close()
         End If
         filename = "inv.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            inv = CType(deserializer.Deserialize(TestFileStream), inventory)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(inventory))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            inv = CType( _
+            mySerializer.Deserialize(myFileStream), inventory)
+            myFileStream.Close()
         End If
         filename = "effect.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            effect = CType(deserializer.Deserialize(TestFileStream), Effects)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(Effects))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            effect = CType( _
+            mySerializer.Deserialize(myFileStream), Effects)
+            myFileStream.Close()
         End If
         filename = "plates.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            plate = CType(deserializer.Deserialize(TestFileStream), plates)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(plates))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            plate = CType( _
+            mySerializer.Deserialize(myFileStream), plates)
+            myFileStream.Close()
         End If
         filename = "loader.dat"
         If IO.File.Exists(dir + "/" + filename) Then
-            Dim TestFileStream As IO.Stream = IO.File.OpenRead(dir + "/" + filename)
-            loader = CType(deserializer.Deserialize(TestFileStream), Loading)
-            TestFileStream.Close()
+            Dim mySerializer As Xml.Serialization.XmlSerializer = New Xml.Serialization.XmlSerializer(GetType(Loading))
+            Dim myFileStream As IO.FileStream = _
+            New IO.FileStream(dir + "/" + filename, IO.FileMode.Open)
+            loader = CType( _
+            mySerializer.Deserialize(myFileStream), Loading)
+            myFileStream.Close()
         End If
         loadmap(player.curWorld, player.x, player.y)
     End Sub
@@ -846,11 +935,9 @@
                 chrset(i) = -1
             Next
             Dim fReader As System.IO.StreamReader = New IO.StreamReader(dir + "charset.txt")
-            'n = readstreamint(fReader)
             n = fReader.ReadLine
             For i As Integer = 1 To n
-                tmp = fReader.Read()
-                'chrset(tmp) = readstreamint(fReader)
+                tmp = fReader.Read()                
                 chrset(tmp) = fReader.ReadLine
             Next
             For i As Integer = 0 To sX - 1
@@ -905,17 +992,13 @@
                 Next
             Next
 
-            'doors.init(dir)
             Dim fReader As System.IO.StreamReader = New IO.StreamReader(dir + "map.txt")
             sX = Xd.Element("map").Element("info").Element("width")
             sY = Xd.Element("map").Element("info").Element("height")
             player.x = Xd.Element("map").Element("info").Element("playerX")
             player.y = Xd.Element("map").Element("info").Element("playerY")
 
-            loader.bW(numLoad) = sX
-            loader.bH(numLoad) = sY
-            loader.bX(numLoad) = player.x
-            loader.bY(numLoad) = player.y
+            loader.addInfo(sX, sY, player.x, player.y)
 
             If (x <> -1) Then
                 player.x = x
@@ -961,6 +1044,7 @@
         unpressarrows()
         LoadTextures(32)
         items.init()
+        effect.init()
         loadmap("main")
         wX = (5) * 32 + 100
         wY = (5) * 32 + 50
@@ -977,6 +1061,7 @@
         'For i As Integer = 0 To 91
         'inv.additem(i, 1)
         'Next
+        'MessageBox.Show(String.Format("good {0} may", 18))
         'tmp
         Timer1.Interval = 10
         Timer1.Start()
@@ -1063,7 +1148,6 @@
                 enem.test(player.x, player.y)
                 If (map(player.x, player.y) = BlockType.Lava) And (effect.search(1) > -1) Then
                 ElseIf (map(player.x, player.y) = BlockType.Lava) And (player.stepCD <> -1) And (Not godMode) Then '!g
-                    'map(player.x, player.y) = BlockType.Block
                     unpressarrows()
                     player.stepCD = -1
                     MessageBox.Show("game over(burn in lava)")
@@ -1075,12 +1159,14 @@
                 End If
                 plate.test(player.x, player.y)
                 enem.chance(player.x, player.y)
-                For i As Integer = 0 To items.count
-                    If (player.x = items.item(i).x And player.y = items.item(i).y And items.item(i).count > 0 And items.item(i).world = player.curWorld) Then
-                        inv.additem(items.item(i).id, items.item(i).count)
-                        items.item(i).count = 0
-                    End If
-                Next
+
+                Dim tlist = items.item.FindAll(Function(x) (x.x = player.x) And (x.y = player.y) And (x.world = player.curWorld))
+                If tlist.Count <> 0 Then
+                    For Each x As itemobj In tlist
+                        inv.additem(x.id, x.count)
+                        items.item.Remove(x)
+                    Next
+                End If
                 '
                 shops.selectedShop = -1
                 shops.open = False
@@ -1124,15 +1210,16 @@
                 'отрисовка игрока
                 e.Graphics.DrawImage(tileset(0), wX, wY)
                 'отрисовка предметов
-                For i As Integer = 0 To items.count
-                    If (items.item(i).count > 0 And items.item(i).world = player.curWorld) Then
-                        e.Graphics.DrawImage(itemtex(items.item(i).tex), scroolX(items.item(i).x), scroolY(items.item(i).y))
+                For Each x As itemobj In items.item
+                    If (x.count > 0 And x.world = player.curWorld) Then
+                        'Console.WriteLine(x.x.ToString + " " + x.y.ToString)
+                        e.Graphics.DrawImage(itemtex(x.tex), scroolX(x.x), scroolY(x.y))
                     End If
                 Next
                 'отрисовка монстров
-                For i As Integer = 0 To enem.count
-                    If enem.world(i) = player.curWorld Then
-                        e.Graphics.DrawImage(tileset(6), scroolX(enem.getX(i)), scroolY(enem.getY(i)), 32, 32)
+                For Each x As enemyStruct In enem.e
+                    If x.world = player.curWorld Then
+                        e.Graphics.DrawImage(tileset(6), scroolX(x.x), scroolY(x.y), 32, 32)
                     End If
                 Next
                 'отрисовка магазинов
@@ -1142,26 +1229,27 @@
                     End If
                 Next
                 'отрисовка дверей
-                For i As Integer = 0 To doors.count
-                    If (doors.tex(i) <> -1 And doors.world(i) = player.curWorld) Then
-                        e.Graphics.DrawImage(tileset(doors.tex(i)), scroolX(doors.dX(i)), scroolY(doors.dY(i)), 32, 32)
+                For i As Integer = 0 To doors.d.Count - 1
+                    If (doors.d(i).tex <> -1 And doors.d(i).world = player.curWorld) Then
+                        e.Graphics.DrawImage(tileset(doors.d(i).tex), scroolX(doors.d(i).x), scroolY(doors.d(i).y), 32, 32)
                     End If
                 Next
                 'отрисовка эффектов
-                For i As Integer = 0 To effect.count
-                    e.Graphics.DrawImage(itemtex(effect.tex(i)), 1, 30 + i * 40)
-                    If effect.isTemp(i) Then
-                        e.Graphics.DrawString(effect.dur(i) / 100, New Font("Arial", 9), Brushes.Black, 50, 50 + 40 * i)
+                For i As Integer = 0 To effect.e.Count - 1
+                    e.Graphics.DrawImage(effecttex(effect.e(i).tex), 1, 30 + i * 40)
+                    If effect.e(i).isTemp Then
+                        e.Graphics.DrawString(effect.e(i).dur / 100, New Font("Arial", 9), Brushes.Black, 50, 50 + 40 * i)
                     End If
                 Next
                 If effect.selected <> -1 Then
-                    e.Graphics.DrawString(effect.pow(effect.selected), New Font("Arial", 9), Brushes.Black, 50, 30 + effect.selected * 40)
+                    'MessageBox.Show(effect.desc(effect.e(effect.selected).id))                    
+                    e.Graphics.DrawString(String.Format(effect.desc(effect.e(effect.selected).id - 1), effect.e(effect.selected).pow), New Font("Arial", 9), Brushes.Black, 50, 30 + effect.selected * 40)
                 End If
                 'отрисовка инвентаря
                 If inv.open Then
                     e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
                     For i As Integer = 0 To 9
-                        If i + inv.page * 10 <= inv.count Then
+                        If i + inv.page * 10 < inv.slot.Count Then
                             Dim it As Integer = i + inv.page * 10
                             e.Graphics.DrawString(items.name(inv.slot(it).id), New Font("Arial", 14), Brushes.Black, 145, 50 + 38 * i)
                             e.Graphics.DrawString(inv.slot(it).count, New Font("Arial", 14), Brushes.Black, 310, 50 + 38 * i)
@@ -1180,7 +1268,7 @@
                     e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
                     e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
                     e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
-                    e.Graphics.DrawString((inv.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
+                    e.Graphics.DrawString((inv.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
                     If inv.desc <> "" Then
                         e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
                         e.Graphics.DrawString(inv.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
@@ -1211,7 +1299,7 @@
                     e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
                     e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
                     e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
-                    e.Graphics.DrawString((shops.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
+                    e.Graphics.DrawString((shops.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
                     If shops.desc <> "" Then
                         e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
                         e.Graphics.DrawString(shops.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
@@ -1224,7 +1312,7 @@
                 Label1.Show()
                 'text load
                 str = words(rand(1, wordscount))
-                For i As Integer = 1 To enem.dif(enem.curBattle) - 1
+                For i As Integer = 1 To enem.curDif - 1 'enem.dif(enem.curBattle) - 1
                     str += " " + words(rand(1, wordscount))
                 Next
                 Label1.Text = str
@@ -1304,7 +1392,7 @@
                 End If
             End If
             If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
-                If inv.page < Math.Floor(inv.count / 10) Then
+                If inv.page < Math.Floor(inv.slot.Count / 10) Then
                     inv.page += 1
                 End If
             End If
@@ -1318,7 +1406,7 @@
             For i As Integer = 0 To 9 '105, 30 + 40 * i
                 If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
                     Dim it As Integer = i + shops.page * 10
-                    If inv.count >= it Then
+                    If inv.slot.Count >= it Then
                         shops.desc = items.desc(shops.items(shops.selectedShop, it).id) + vbNewLine + "LBM - buy" + vbNewLine + "RBM - sell"
                         shops.selectedItem = it
                     End If
@@ -1330,7 +1418,7 @@
             For i As Integer = 0 To 9 '105, 30 + 40 * i
                 If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
                     Dim it As Integer = i + inv.page * 10
-                    If inv.count >= it Then
+                    If inv.slot.Count > it Then
                         inv.desc = items.desc(inv.slot(it).id)
                         inv.selected = it
                     End If
@@ -1338,7 +1426,7 @@
             Next
         End If
         effect.selected = -1
-        For i As Integer = 0 To effect.count
+        For i As Integer = 0 To effect.e.Count - 1
             If inRect(e.X, e.Y, 1, 30 + i * 40, 1 + 32, 30 + i * 40 + 32) Then
                 effect.selected = i
             End If

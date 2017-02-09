@@ -51,7 +51,7 @@
 		<name>reincarnator</name>
 		<type>godItem</type>
 		<description>this item can reincarnate you if you death</description>
-		<texture>0</texture>
+		<texture>9</texture>
 		<effectID>3</effectID>
 		<duration>1</duration>
 		<power>5</power>
