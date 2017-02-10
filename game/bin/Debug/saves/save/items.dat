@@ -147,14 +147,6 @@
       <world>main</world>
     </itemobj>
     <itemobj>
-      <id>0</id>
-      <count>1</count>
-      <x>7</x>
-      <y>2</y>
-      <tex>0</tex>
-      <world>main</world>
-    </itemobj>
-    <itemobj>
       <id>3</id>
       <count>1</count>
       <x>2</x>

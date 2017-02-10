@@ -36,5 +36,5 @@
   <stepDif>2</stepDif>
   <curBattle>-1</curBattle>
   <curDif>0</curDif>
-  <update>false</update>
+  <update>true</update>
 </enemy>
