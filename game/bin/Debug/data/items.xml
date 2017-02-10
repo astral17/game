@@ -1,0 +1,105 @@
+<items>
+	<item>
+		<name>superSword</name>
+		<type>weapon</type>
+		<description>this sword add 5 damage</description>
+		<texture>0</texture>
+		<effectID>2</effectID>
+		<duration>1</duration>
+		<power>5</power>
+		<usable>0</usable>
+	</item>
+	<item>
+		<name>superArmor</name>
+		<type>armor</type>
+		<description>this item add undeath in lava at 10s</description>
+		<texture>1</texture>
+		<effectID>1</effectID>
+		<duration>300</duration>
+		<power>8</power>
+		<usable>1</usable>
+	</item>
+	<item>
+		<name>money</name>
+		<type>editorItem</type>
+		<description>onlyEditorItem</description>
+		<texture>2</texture>
+		<effectID>0</effectID>
+	</item>
+	<item>
+		<name>doorKey</name>
+		<type>key</type>
+		<description>master key which open standard doors</description>
+		<texture>3</texture>
+		<effectID>0</effectID>
+	</item>
+	<item>
+		<name>caveKey</name>
+		<type>key</type>
+		<description>key which can open door in GREATE MAZE</description>
+		<texture>4</texture>
+		<effectID>0</effectID>
+	</item>
+	<item>
+		<name>chestKey</name>
+		<type>key</type>
+		<description>key for chest</description>
+		<texture>5</texture>
+		<effectID>0</effectID>
+	</item>
+	<item>
+		<name>reincarnator</name>
+		<type>godItem</type>
+		<description>this item can reincarnate you if you death</description>
+		<texture>9</texture>
+		<effectID>3</effectID>
+		<duration>1</duration>
+		<power>5</power>
+		<usable>1</usable>
+	</item>
+	<item>
+		<name>cheatSword</name>
+		<type>godWeapon</type>
+		<description>this sword add NaN damage</description>
+		<texture>7</texture>
+		<effectID>2</effectID>
+		<duration>1</duration>
+		<power>999</power>
+		<usable>0</usable>
+	</item>
+	<item>
+		<name>masterKey</name>
+		<type>godItem</type>
+		<description>this key can open all doors in game</description>
+		<texture>8</texture>
+		<effectID>0</effectID>
+	</item>
+	<item>
+		<name>immortalityAmulet</name>
+		<type>godItem</type>
+		<description>this amulet make you immortal</description>
+		<texture>1</texture>
+		<effectID>1</effectID>
+		<duration>1</duration>
+		<power>5</power>
+		<usable>0</usable>
+	</item>
+	<item>
+		<name>waterPill</name>
+		<type>pill</type>
+		<description>pill which give you waterbreath</description>
+		<texture>0</texture>
+		<effectID>4</effectID>
+		<duration>500</duration>
+		<power>1</power>
+		<usable>1</usable>
+	</item>
+	<item>
+		<name>veryOldKey</name>
+		<type>key</type>
+		<description>this key is very old and i don't no which door he open</description>
+		<texture>5</texture>
+		<effectID>0</effectID>
+	</item>
+</items>
+

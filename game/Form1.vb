@@ -20,6 +20,7 @@
     Public player As New Players
     Public effect As New Effects
     Public shops As New Shop
+    Public listBar As New listBarClass
 
     Enum BlockType
         Grass = 0
@@ -32,6 +33,12 @@
         CobbleStone = 7
         StoneWall = 8
         NetherRock = 9
+    End Enum
+    Enum lists
+        inventory = 0
+        equipment = 1
+        shop = 2
+        chest = 3
     End Enum
 
     <Serializable()>
@@ -147,7 +154,7 @@
         Public item As New List(Of itemobj)
         'Public count As Integer = -1
         Public Sub init()
-            Dim Xd As XDocument = XDocument.Load("items.xml")
+            Dim Xd As XDocument = XDocument.Load("data/items.xml")
             'MessageBox.Show(Xd.Element("map").Element("test").Elements.Count)
             'item[name,type,desc,tex,eff[dureff,poweff,usable]]
             'Dim i As Integer = -1
@@ -179,6 +186,47 @@
             item.Add(New itemobj(id, x, y, counti, tex(id), Form1.player.curWorld))
         End Sub
     End Class
+    Public Structure listStruct
+        Public tex As Integer
+        Public text As String
+        Public isActive As Boolean
+        Public Sub New(ByVal tex1 As Integer, text1 As String, isActive1 As Boolean)
+            tex = tex1
+            text = text1
+            isActive = isActive1
+        End Sub
+    End Structure
+    Public Class listBarClass
+        Public selected As Integer = lists.inventory
+        Public activeCount As Integer = 0
+        Public open As Boolean = False
+        Public e As New List(Of listStruct)
+        Public Sub init()
+            e.Add(New listStruct(1, "inventory", True))
+            e.Add(New listStruct(1, "equipment", True))
+            e.Add(New listStruct(1, "shop", False))
+            e.Add(New listStruct(1, "chest", False))
+            activeCount = 2
+        End Sub
+        Public Sub activate(ByVal num As lists)
+            Dim x As listStruct
+            If Not e(num).isActive Then
+                activeCount += 1
+            End If
+            x = e(num)
+            x.isActive = True
+            e(num) = x
+        End Sub
+        Public Sub deactivate(ByVal num As lists)
+            Dim x As listStruct
+            If e(num).isActive Then
+                activeCount -= 1
+            End If
+            x = e(num)
+            x.isActive = False
+            e(num) = x
+        End Sub
+    End Class
     <Serializable()>
     Public Structure slots
         Public id, count, tex As Integer
@@ -188,21 +236,9 @@
             tex = tex1
         End Sub
     End Structure
-    Public Class moreBar
-        Public selected As Integer = -1
-        Public tex As New List(Of Integer)
-        Public text As New List(Of String)
-        Public Sub init()
-
-        End Sub
-        Public Sub add(ByVal texture As Integer, text As String)
-
-        End Sub
-    End Class
     <Serializable()>
     Public Class inventory
         Public slot As New List(Of slots)
-        Public open As Boolean = False
         Public selected As Integer = -1
         Public desc As String = ""
         Public page As Integer = 0
@@ -222,7 +258,6 @@
                 If Not (Form1.items.isUsable(slot(slot.Count - 1).id)) Then
                     useItem(slot.Count - 1)
                 End If
-                'Debug.Fail("imposible point of code")
             End If
         End Sub
         Public Sub subItem(ByVal id As Integer, itemCount As Integer)
@@ -296,7 +331,6 @@
         Public selectedItem As Integer = -1
         Public selectedShop As Integer = -1
         Public desc As String = "LBM - buy" + vbNewLine + "RBM - sell"
-        Public open As Boolean = False
         Public page As Integer = 0
         Public Function create(ByVal x As Integer, y As Integer, tex1 As Integer)
             count += 1
@@ -354,59 +388,30 @@
         Public desc As New List(Of String)
         Public selected As Integer = -1
         Public Sub init()
-            Dim Xd As XDocument = XDocument.Load("effects.xml")
+            Dim Xd As XDocument = XDocument.Load("data/effects.xml")
             For Each xe As XElement In Xd.Elements("effects").Elements
                 desc.Add(xe.Value)
             Next
         End Sub
         Public Sub add(ByVal id1 As Integer, dur1 As Integer, pow1 As Integer, tex1 As Integer, Optional ByVal isTemp1 As Boolean = True)
-            'count += 1
             e.Add(New effectStruct(id1, dur1, pow1, tex1, isTemp1))
-            'id.Add(id1)
-            'dur.Add(dur1)
-            'pow.Add(pow1)
-            'tex.Add(tex1) 'Form1.items.tex(itemID)
-            'showDesc.Add(False)
-            'isTemp.Add(isTemp1)
         End Sub
         Public Sub remove(ByVal id1 As Integer, Optional ByVal pow1 As Integer = -1)
             Dim i As Integer = e.FindIndex(Function(x) (x.id = id1) And ((x.pow = pow1) Or (pow1 = -1)))
+            If selected >= i Then
+                selected = -1
+            End If
             If i <> -1 Then
                 e.RemoveAt(i)
             End If
-            'Dim t As Boolean = False
-            'For i As Integer = 0 To id.Count
-            '    If (t) And (i > 0) Then
-            '        id(i - 1) = id(i)
-            '        dur(i - 1) = dur(i)
-            '        pow(i - 1) = pow(i)
-            '        tex(i - 1) = tex(i)
-            '        showDesc(i - 1) = showDesc(i)
-            '        isTemp(i - 1) = isTemp(i)
-            '    End If
-            '    If (id(i) = id1) And ((pow1 = -1) Or (pow(i) = pow1)) Then
-            '        t = True
-            '    End If
-            'Next
-            'If t Then
-            '    count -= 1
-            'End If
         End Sub
         Public Sub removeByNum(ByVal num As Integer)
+            If selected >= num Then
+                selected = -1
+            End If
             If num <> -1 Then
                 e.RemoveAt(num)
             End If
-            'For i As Integer = num To count
-            '    If i > num Then
-            '        id(i - 1) = id(i)
-            '        dur(i - 1) = dur(i)
-            '        pow(i - 1) = pow(i)
-            '        tex(i - 1) = tex(i)
-            '        showDesc(i - 1) = showDesc(i)
-            '        isTemp(i - 1) = isTemp(i)
-            '    End If
-            'Next
-            'count -= 1
         End Sub
         Public Function search(ByVal id1 As Integer) As Integer
             Dim max As Integer = -1
@@ -433,10 +438,10 @@
                     'Case 1 undead обработка там где лава
                     'Case 2 incAttack
                     'Case 3 reincarnation
-                    'If x.id = 3 Then
-                    '    Form1.player.stepCD = 0
-                    '    add(1, 300, 1, 3, True)
-                    'End If
+                    If e(i).id = 3 Then
+                        Form1.player.stepCD = 0
+                        add(1, 300, 1, 3, True)
+                    End If
                     'Case 4 waterbreath
                 Next
             End If
@@ -478,10 +483,6 @@
     <Serializable()>
     Public Class plates
         Public e As New List(Of plateStruct)
-        'Dim p(99) As Point, p2(99) As Point
-        'Dim ac(99) As action
-        'Public world(99) As String
-        'Public count As Integer = -1
         Public update As Boolean = True
         Public Sub runPlate(ByVal n As Integer)
             If (e(n).ac.id = 0) And (e(n).ac.val = 0) Then
@@ -492,8 +493,6 @@
             Select Case e(n).ac.id
                 Case 0 'remove messageBox with val id
                     e.RemoveAt(n)
-                    'e(n).ac.id = -1
-                    'e(n - 1).ac.id = -1
                 Case 1 'set step chance
                     Form1.enem.stepChance = e(n).ac.val
                 Case 2 'set step difficult
@@ -550,35 +549,14 @@
         Public curBattle As Integer = -1
         Public curDif As Integer = 0
         Public update As Boolean = False
-        'Public Property count As Integer
-        '    Get
-        '        Return mcount
-        '    End Get
-        '    Set(value As Integer)
-        '        mcount = value
-        '    End Set
-        'End Property
 
         Public Sub spawn(ByVal x As Integer, y As Integer, diff As Integer)
-            'mcount += 1
             e.Add(New enemyStruct(x, y, diff, Form1.player.curWorld))
-            'p(mcount).X = x
-            'p(mcount).Y = ys
-            'dif(mcount) = diff
-            'world(mcount) = Form1.player.curWorld
 
         End Sub
         Public Sub kill(ByVal n As Integer)
             e.RemoveAt(n)
-            'For i As Integer = n To mcount - 1
-            '    p(i) = p(i + 1)
-            '    dif(i) = dif(i + 1)
-            'Next
-            'mcount -= 1
         End Sub
-        'Public Function getSt(ByVal n As Integer) As Integer
-        '    Return state(n)
-        'End Function
         Public Sub test(ByVal x As Integer, y As Integer)
             'Dim tlist = e.FindAll(Function(x) (x.x = x) And (x.y = y))
             ''System.Console.WriteLine(tlist.Count)
@@ -661,7 +639,7 @@
         End Sub
     End Class
     Public Sub LoadTextures(ByVal TileSetSize As Integer)
-        Dim tex As Bitmap = Bitmap.FromFile("texture.png")
+        Dim tex As Bitmap = Bitmap.FromFile("data/texture.png")
         For i As Integer = 0 To 5
             For j As Integer = 0 To 5
                 tileset(j * 6 + i) = New Bitmap(TileSetSize, TileSetSize)
@@ -669,7 +647,7 @@
                 g.DrawImage(tex, New Rectangle(0, 0, TileSetSize, TileSetSize), New Rectangle(i * TileSetSize, j * TileSetSize, TileSetSize, TileSetSize), GraphicsUnit.Pixel)
             Next
         Next
-        Dim tex2 As Bitmap = Bitmap.FromFile("items.png")
+        Dim tex2 As Bitmap = Bitmap.FromFile("data/items.png")
         For i As Integer = 0 To 5
             For j As Integer = 0 To 5
                 itemtex(j * 6 + i) = New Bitmap(TileSetSize, TileSetSize)
@@ -677,7 +655,7 @@
                 g.DrawImage(tex2, New Rectangle(0, 0, TileSetSize, TileSetSize), New Rectangle(i * TileSetSize, j * TileSetSize, TileSetSize, TileSetSize), GraphicsUnit.Pixel)
             Next
         Next
-        Dim tex3 As Bitmap = Bitmap.FromFile("effects.png")
+        Dim tex3 As Bitmap = Bitmap.FromFile("data/effects.png")
         For i As Integer = 0 To 5
             For j As Integer = 0 To 5
                 effecttex(j * 6 + i + 1) = New Bitmap(TileSetSize, TileSetSize)
@@ -697,8 +675,8 @@
         If e.KeyCode = Keys.ShiftKey Then
             Return
         End If
-        Dim tmp = inv.open
-        inv.open = False
+        Dim tmp = listBar.open
+        listBar.open = False
         e.SuppressKeyPress = True
         Select Case e.KeyCode
             Case Keys.Up
@@ -711,10 +689,13 @@
                 kRight = True
             Case Keys.E
                 If tmp Then
-                    inv.open = False
+                    listBar.open = False
                 Else
                     inv.desc = ""
-                    inv.open = True
+                    If (listBar.selected < 0) Or (listBar.selected >= listBar.activeCount) Then
+                        listBar.selected = lists.inventory
+                    End If
+                    listBar.open = True
                 End If
             Case Keys.Q
                 If tmp Then
@@ -723,7 +704,7 @@
                         cfd = inv.slot(inv.selected).count
                     End If
                     inv.subItemFromSlot(inv.selected, cfd)
-                    inv.open = True
+                    listBar.open = True
                 End If
             Case Keys.S
                 'save data
@@ -736,7 +717,9 @@
             Case Keys.T
                 loadmap(player.curWorld, player.x, player.y)
             Case Keys.Y
-                loadmap("cave2")
+                listBar.selected += 1
+            Case Keys.U
+                listBar.selected -= 1
             Case Keys.O
                 player.stepCD = 0
             Case Keys.C
@@ -1045,11 +1028,12 @@
         LoadTextures(32)
         items.init()
         effect.init()
+        listBar.init()
         loadmap("main")
         wX = (5) * 32 + 100
         wY = (5) * 32 + 50
 
-        Dim fReader As IO.StreamReader = New IO.StreamReader("words.txt", System.Text.Encoding.Default)
+        Dim fReader As IO.StreamReader = New IO.StreamReader("data/words.txt", System.Text.Encoding.Default)
         wordscount = Int(fReader.ReadLine)
         For i As Integer = 1 To wordscount
             words(i) = fReader.ReadLine()
@@ -1169,13 +1153,18 @@
                 End If
                 '
                 shops.selectedShop = -1
-                shops.open = False
+                Dim bool As Boolean = True
                 For i As Integer = 0 To shops.count
                     If (player.x = shops.p(i).X And player.y = shops.p(i).Y And shops.world(i) = player.curWorld) Then
                         shops.selectedShop = i
-                        shops.open = True
+                        listBar.activate(lists.shop)
+                        bool = False
+                        'shops.open = True
                     End If
                 Next
+                If bool Then
+                    listBar.deactivate(lists.shop)
+                End If
                 'EсобытияE
                 'отрисовка карты
                 For i As Integer = 0 To sX - 1
@@ -1245,68 +1234,88 @@
                     'MessageBox.Show(effect.desc(effect.e(effect.selected).id))                    
                     e.Graphics.DrawString(String.Format(effect.desc(effect.e(effect.selected).id - 1), effect.e(effect.selected).pow), New Font("Arial", 9), Brushes.Black, 50, 30 + effect.selected * 40)
                 End If
-                'отрисовка инвентаря
-                If inv.open Then
-                    e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
-                    For i As Integer = 0 To 9
-                        If i + inv.page * 10 < inv.slot.Count Then
-                            Dim it As Integer = i + inv.page * 10
-                            e.Graphics.DrawString(items.name(inv.slot(it).id), New Font("Arial", 14), Brushes.Black, 145, 50 + 38 * i)
-                            e.Graphics.DrawString(inv.slot(it).count, New Font("Arial", 14), Brushes.Black, 310, 50 + 38 * i)
-                            e.Graphics.DrawString(items.type(inv.slot(it).id), New Font("Arial", 14), Brushes.Black, 370, 50 + 38 * i)
-                            e.Graphics.DrawImage(itemtex(items.tex(inv.slot(it).id)), 105, 50 + 38 * i)
-                        End If
-                    Next '160 435
-                    e.Graphics.DrawString("TEX", New Font("Arial", 14), Brushes.Black, 100, 20)
-                    e.Graphics.DrawString("NAME", New Font("Arial", 14), Brushes.Black, 175, 20)
-                    e.Graphics.DrawString("COUNT", New Font("Arial", 14), Brushes.Black, 285, 20)
-                    e.Graphics.DrawString("TYPE", New Font("Arial", 14), Brushes.Black, 385, 20)
-
-                    e.Graphics.FillRectangle(Brushes.Gray, 105, 30 + 40 * 10, 95, 32)
-                    e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 435)
-                    e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 457)
-                    e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
-                    e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
-                    e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
-                    e.Graphics.DrawString((inv.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
-                    If inv.desc <> "" Then
-                        e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
-                        e.Graphics.DrawString(inv.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
-                    End If
-                End If
-                'отрисовка отрытого магазина
-                If shops.open Then
-                    e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
-                    For i As Integer = 0 To 9
-                        If i + shops.page * 10 <= shops.itemsCount(shops.selectedShop) Then
-                            Dim it As Integer = i + shops.page * 10
-                            With shops.items(shops.selectedShop, it)
-                                e.Graphics.DrawString(items.name(.id), New Font("Arial", 14), Brushes.Black, 145, 50 + 38 * i)
-                                e.Graphics.DrawString(.cost, New Font("Arial", 14), Brushes.Black, 310, 50 + 38 * i)
-                                e.Graphics.DrawString(items.type(.id), New Font("Arial", 14), Brushes.Black, 370, 50 + 38 * i)
-                                e.Graphics.DrawImage(itemtex(items.tex(.id)), 105, 50 + 38 * i)
-                            End With
-                        End If
-                    Next '160 435
-                    e.Graphics.DrawString("TEX", New Font("Arial", 14), Brushes.Black, 100, 20)
-                    e.Graphics.DrawString("NAME", New Font("Arial", 14), Brushes.Black, 175, 20)
-                    e.Graphics.DrawString("COST", New Font("Arial", 14), Brushes.Black, 295, 20)
-                    e.Graphics.DrawString("TYPE", New Font("Arial", 14), Brushes.Black, 385, 20)
-
-                    e.Graphics.FillRectangle(Brushes.Gray, 105, 30 + 40 * 10, 95, 32)
-                    e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 435)
-                    e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 457)
-                    e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
-                    e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
-                    e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
-                    e.Graphics.DrawString((shops.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
-                    If shops.desc <> "" Then
-                        e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
-                        e.Graphics.DrawString(shops.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
-                    End If
-                End If
-
+                'money
                 e.Graphics.DrawString("money " + player.money.ToString, New Font("Arial", 11), Brushes.Black, 5, 5)
+                'отрисовка ListBar
+                If listBar.open Then
+                    e.Graphics.FillRectangle(Brushes.Gray, 50, 10, 50, 460)
+                    'e.Graphics.FillRectangle(Brushes.LightGray, 50, 10 + (1 - 1) * 50, 50, 50)
+                    'e.Graphics.FillRectangle(Brushes.DarkGray, 50, 10 + (2 - 1) * 50, 50, 50)
+                    'e.Graphics.FillRectangle(Brushes.DarkGray, 50, 10 + (3 - 1) * 50, 50, 50)
+                    Dim offset As Integer = 0
+                    For i As Integer = 0 To listBar.e.Count - 1
+                        If listBar.e(i).isActive Then
+                            If i = listBar.selected Then
+                                e.Graphics.FillRectangle(Brushes.LightGray, 50, 10 + (i - offset) * 50, 50, 50)
+                            Else
+                                e.Graphics.FillRectangle(Brushes.DarkGray, 50, 10 + (i - offset) * 50, 50, 50)
+                            End If
+                        Else
+                            offset += 1
+                        End If
+                    Next
+
+                    'отрисовка инвентаря
+                    If listBar.selected = lists.inventory Then
+                        e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
+                        For i As Integer = 0 To 9
+                            If i + inv.page * 10 < inv.slot.Count Then
+                                Dim it As Integer = i + inv.page * 10
+                                e.Graphics.DrawString(items.name(inv.slot(it).id), New Font("Arial", 14), Brushes.Black, 145, 50 + 38 * i)
+                                e.Graphics.DrawString(inv.slot(it).count, New Font("Arial", 14), Brushes.Black, 310, 50 + 38 * i)
+                                e.Graphics.DrawString(items.type(inv.slot(it).id), New Font("Arial", 14), Brushes.Black, 370, 50 + 38 * i)
+                                e.Graphics.DrawImage(itemtex(items.tex(inv.slot(it).id)), 105, 50 + 38 * i)
+                            End If
+                        Next '160 435
+                        e.Graphics.DrawString("TEX", New Font("Arial", 14), Brushes.Black, 100, 20)
+                        e.Graphics.DrawString("NAME", New Font("Arial", 14), Brushes.Black, 175, 20)
+                        e.Graphics.DrawString("COUNT", New Font("Arial", 14), Brushes.Black, 285, 20)
+                        e.Graphics.DrawString("TYPE", New Font("Arial", 14), Brushes.Black, 385, 20)
+
+                        e.Graphics.FillRectangle(Brushes.Gray, 105, 30 + 40 * 10, 95, 32)
+                        e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 435)
+                        e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 457)
+                        e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
+                        e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
+                        e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
+                        e.Graphics.DrawString((inv.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
+                        If inv.desc <> "" Then
+                            e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
+                            e.Graphics.DrawString(inv.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
+                        End If
+                    End If
+                    'отрисовка отрытого магазина
+                    If (listBar.selected = lists.shop) And (shops.selectedShop <> -1) Then
+                        e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
+                        For i As Integer = 0 To 9
+                            If i + shops.page * 10 <= shops.itemsCount(shops.selectedShop) Then
+                                Dim it As Integer = i + shops.page * 10
+                                With shops.items(shops.selectedShop, it)
+                                    e.Graphics.DrawString(items.name(.id), New Font("Arial", 14), Brushes.Black, 145, 50 + 38 * i)
+                                    e.Graphics.DrawString(.cost, New Font("Arial", 14), Brushes.Black, 310, 50 + 38 * i)
+                                    e.Graphics.DrawString(items.type(.id), New Font("Arial", 14), Brushes.Black, 370, 50 + 38 * i)
+                                    e.Graphics.DrawImage(itemtex(items.tex(.id)), 105, 50 + 38 * i)
+                                End With
+                            End If
+                        Next '160 435
+                        e.Graphics.DrawString("TEX", New Font("Arial", 14), Brushes.Black, 100, 20)
+                        e.Graphics.DrawString("NAME", New Font("Arial", 14), Brushes.Black, 175, 20)
+                        e.Graphics.DrawString("COST", New Font("Arial", 14), Brushes.Black, 295, 20)
+                        e.Graphics.DrawString("TYPE", New Font("Arial", 14), Brushes.Black, 385, 20)
+
+                        e.Graphics.FillRectangle(Brushes.Gray, 105, 30 + 40 * 10, 95, 32)
+                        e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 435)
+                        e.Graphics.DrawLine(Pens.Black, 140, 446, 160, 457)
+                        e.Graphics.FillRectangle(Brushes.Gray, 400, 30 + 40 * 10, 95, 32)
+                        e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
+                        e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
+                        e.Graphics.DrawString((shops.page + 1).ToString + "/" + (Math.Max(Math.Floor(inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(inv.slot.Count / 10) > 8) + 5 * (inv.page > 8), 446 - 10)
+                        If shops.desc <> "" Then
+                            e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
+                            e.Graphics.DrawString(shops.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
+                        End If
+                    End If
+                End If
             Case "battleInit"
                 unpressarrows()
                 Label1.Show()
@@ -1349,81 +1358,99 @@
         End If
     End Function
     Private Sub PictureBox1_MouseDown(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseDown
-        If shops.open Then
-            'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
-            For i As Integer = 0 To 9 '105, 30 + 40 * i
-                If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
-                    Dim it As Integer = i + shops.page * 10
-                    If e.Button = MouseButtons.Left Then
-                        shops.buyItem(shops.selectedShop, shops.selectedItem, 1)
-                    End If
-                    If e.Button = MouseButtons.Right Then
-                        shops.sellItem(shops.selectedShop, shops.selectedItem, 1)
-                    End If
+        If listBar.open Then
+            For i As Integer = 0 To listBar.activeCount - 1
+                If inRect(e.X, e.Y, 50, 10 + i * 50, 100, 10 + (i + 1) * 50) Then
+                    Dim offset As Integer = -1
+                    For j As Integer = 0 To listBar.e.Count
+                        If listBar.e(j).isActive Then
+                            offset += 1
+                        End If
+                        If offset = i Then
+                            listBar.selected = j
+                            Exit For
+                        End If
+                    Next
                 End If
             Next
-            If inRect(e.X, e.Y, 105, 30 + 40 * 10, 200, 30 + 40 * 10 + 32) Then
-                If shops.page > 0 Then
-                    shops.page -= 1
-                End If
-            End If
-            If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
-                If shops.page < Math.Floor(shops.itemsCount(shops.selectedShop) / 10) Then
-                    shops.page += 1
-                End If
-            End If
-        ElseIf inv.open Then
-            'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
-            If e.Button = Windows.Forms.MouseButtons.Right Then
+            If (listBar.selected = lists.shop) And (shops.selectedShop <> -1) Then
+                'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
                 For i As Integer = 0 To 9 '105, 30 + 40 * i
                     If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
-                        Dim it As Integer = i + inv.page * 10
-                        If (items.isUsable(inv.slot(it).id)) Then
-                            If inv.useItem(it) Then
-                                inv.subItem(inv.slot(it).id, 1)
-                            End If
+                        Dim it As Integer = i + shops.page * 10
+                        If e.Button = MouseButtons.Left Then
+                            shops.buyItem(shops.selectedShop, shops.selectedItem, 1)
+                        End If
+                        If e.Button = MouseButtons.Right Then
+                            shops.sellItem(shops.selectedShop, shops.selectedItem, 1)
                         End If
                     End If
                 Next
-            End If
-            If inRect(e.X, e.Y, 105, 30 + 40 * 10, 200, 30 + 40 * 10 + 32) Then
-                If inv.page > 0 Then
-                    inv.page -= 1
+                If inRect(e.X, e.Y, 105, 30 + 40 * 10, 200, 30 + 40 * 10 + 32) Then
+                    If shops.page > 0 Then
+                        shops.page -= 1
+                    End If
                 End If
-            End If
-            If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
-                If inv.page < Math.Floor(inv.slot.Count / 10) Then
-                    inv.page += 1
+                If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
+                    If shops.page < Math.Floor(shops.itemsCount(shops.selectedShop) / 10) Then
+                        shops.page += 1
+                    End If
+                End If
+            ElseIf listBar.selected = lists.inventory Then
+                'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
+                If e.Button = Windows.Forms.MouseButtons.Right Then
+                    For i As Integer = 0 To 9 '105, 30 + 40 * i
+                        If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
+                            Dim it As Integer = i + inv.page * 10
+                            If (items.isUsable(inv.slot(it).id)) Then
+                                If inv.useItem(it) Then
+                                    inv.subItem(inv.slot(it).id, 1)
+                                End If
+                            End If
+                        End If
+                    Next
+                End If
+                If inRect(e.X, e.Y, 105, 30 + 40 * 10, 200, 30 + 40 * 10 + 32) Then
+                    If inv.page > 0 Then
+                        inv.page -= 1
+                    End If
+                End If
+                If inRect(e.X, e.Y, 400, 30 + 40 * 10, 495, 30 + 40 * 10 + 32) Then
+                    If inv.page < Math.Floor(inv.slot.Count / 10) Then
+                        inv.page += 1
+                    End If
                 End If
             End If
         End If
     End Sub
 
     Private Sub PictureBox1_MouseMove(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseMove
-        If shops.open Then
-            shops.desc = "LBM - buy" + vbNewLine + "RBM - sell"
-            shops.selectedItem = -1
-            For i As Integer = 0 To 9 '105, 30 + 40 * i
-                If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
-                    Dim it As Integer = i + shops.page * 10
-                    If inv.slot.Count >= it Then
-                        shops.desc = items.desc(shops.items(shops.selectedShop, it).id) + vbNewLine + "LBM - buy" + vbNewLine + "RBM - sell"
-                        shops.selectedItem = it
+        If listBar.open Then
+            If (listBar.selected = lists.shop) And (shops.selectedShop <> -1) Then
+                shops.desc = "LBM - buy" + vbNewLine + "RBM - sell"
+                shops.selectedItem = -1
+                For i As Integer = 0 To 9 '105, 30 + 40 * i
+                    If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
+                        Dim it As Integer = i + shops.page * 10
+                        If inv.slot.Count >= it Then
+                            shops.desc = items.desc(shops.items(shops.selectedShop, it).id) + vbNewLine + "LBM - buy" + vbNewLine + "RBM - sell"
+                            shops.selectedItem = it
+                        End If
                     End If
-                End If
-            Next
-        ElseIf inv.open Then
-            inv.desc = ""
-            inv.selected = -1
-            For i As Integer = 0 To 9 '105, 30 + 40 * i
-                If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
-                    Dim it As Integer = i + inv.page * 10
-                    If inv.slot.Count > it Then
-                        inv.desc = items.desc(inv.slot(it).id)
-                        inv.selected = it
+                Next
+            ElseIf listBar.selected = lists.inventory Then
+                inv.desc = ""
+                inv.selected = -1
+                For i As Integer = 0 To 9 '105, 30 + 40 * i
+                    If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
+                        Dim it As Integer = i + inv.page * 10
+                        If inv.slot.Count > it Then
+                            inv.desc = items.desc(inv.slot(it).id)
+                            inv.selected = it
+                        End If
                     End If
-                End If
-            Next
+                Next
+            End If
         End If
         effect.selected = -1
         For i As Integer = 0 To effect.e.Count - 1
