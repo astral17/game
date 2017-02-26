@@ -92,13 +92,26 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.vb">
+    <Compile Include="gameModules\DoorModule.vb" />
+    <Compile Include="gameModules\EffectModule.vb" />
+    <Compile Include="gameModules\EnemyModule.vb" />
+    <Compile Include="gameModules\EquipmentModule.vb" />
+    <Compile Include="gameModules\InventoryModule.vb" />
+    <Compile Include="gameModules\ItemModule.vb" />
+    <Compile Include="gameModules\ListBarModule.vb" />
+    <Compile Include="gameModules\LoaderModule.vb" />
+    <Compile Include="gameModules\PlayerModule.vb" />
+    <Compile Include="gameModules\ShopModule.vb" />
+    <Compile Include="gameModules\TriggerModule.vb" />
+    <Compile Include="MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.vb">
-      <DependentUpon>Form1.vb</DependentUpon>
+    <Compile Include="MainForm.Designer.vb">
+      <DependentUpon>MainForm.vb</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="EnumModule.vb" />
+    <Compile Include="MainGameModule.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -116,8 +129,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.vb</DependentUpon>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
@@ -156,6 +169,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<Door xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <d>
+<DoorClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <doors>
     <doorStruct>
       <x>13</x>
       <y>7</y>
@@ -22,5 +22,5 @@
       <tex>10</tex>
       <world>main</world>
     </doorStruct>
-  </d>
-</Door>
+  </doors>
+</DoorClass>

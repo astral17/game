@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<EffectClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <e />
+  <desc>
+    <string>give you immortality</string>
+    <string>increase your attack on {0} damage</string>
+    <string>you was reincarnated</string>
+    <string>give you waterbreath</string>
+  </desc>
+  <selected>-1</selected>
+</EffectClass>

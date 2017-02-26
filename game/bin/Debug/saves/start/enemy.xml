@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<enemy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<EnemyClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <e>
     <enemyStruct>
       <x>4</x>
@@ -36,5 +36,5 @@
   <stepDif>2</stepDif>
   <curBattle>-1</curBattle>
   <curDif>0</curDif>
-  <update>true</update>
-</enemy>
+  <update>false</update>
+</EnemyClass>

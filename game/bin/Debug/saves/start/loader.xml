@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<LoaderClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <loaded>
+    <string>main</string>
+  </loaded>
+  <bW>
+    <int>30</int>
+  </bW>
+  <bH>
+    <int>35</int>
+  </bH>
+  <bX>
+    <int>1</int>
+  </bX>
+  <bY>
+    <int>1</int>
+  </bY>
+</LoaderClass>

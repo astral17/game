@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<plates xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <e>
-    <plateStruct>
+<TriggerClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <triggers>
+    <triggerStruct>
       <x>1</x>
       <y>4</y>
       <x2>1</x2>
@@ -13,8 +13,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>1</x>
       <y>1</y>
       <x2>1</x2>
@@ -26,8 +26,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>1</x>
       <y>1</y>
       <x2>1</x2>
@@ -39,8 +39,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>19</y>
       <x2>40</x2>
@@ -52,8 +52,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>19</y>
       <x2>40</x2>
@@ -65,8 +65,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>20</y>
       <x2>40</x2>
@@ -78,8 +78,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>20</y>
       <x2>40</x2>
@@ -91,8 +91,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>34</y>
       <x2>40</x2>
@@ -104,8 +104,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>34</y>
       <x2>40</x2>
@@ -117,8 +117,8 @@
         <valS />
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>0</x>
       <y>34</y>
       <x2>40</x2>
@@ -130,8 +130,8 @@
         <valS>cave</valS>
       </ac>
       <world>main</world>
-    </plateStruct>
-    <plateStruct>
+    </triggerStruct>
+    <triggerStruct>
       <x>29</x>
       <y>13</y>
       <x2>29</x2>
@@ -143,7 +143,7 @@
         <valS>secret</valS>
       </ac>
       <world>main</world>
-    </plateStruct>
-  </e>
+    </triggerStruct>
+  </triggers>
   <update>false</update>
-</plates>
+</TriggerClass>
