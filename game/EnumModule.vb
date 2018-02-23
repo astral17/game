@@ -24,6 +24,7 @@
         chest = 3
     End Enum
     Public Enum EquipmentSlots
+        None = -1
         MainHand = 0
         OffHand = 1
         Head = 2
@@ -32,4 +33,16 @@
         Feet = 5
         Last = 5
     End Enum
+    Public EquipmentSlotsDict As New Dictionary(Of String, EquipmentSlots)
+    Public Sub EnumInit()
+        With EquipmentSlotsDict
+            .Add("None", EquipmentSlots.None)
+            .Add("MainHand", EquipmentSlots.MainHand)
+            .Add("OffHand", EquipmentSlots.OffHand)
+            .Add("Head", EquipmentSlots.Head)
+            .Add("Chest", EquipmentSlots.Chest)
+            .Add("Legs", EquipmentSlots.Legs)
+            .Add("Feet", EquipmentSlots.Feet)
+        End With
+    End Sub
 End Module

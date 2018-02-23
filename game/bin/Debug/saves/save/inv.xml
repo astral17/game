@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <InventoryClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <slot />
+  <slot>
+    <InventorySlot>
+      <id>10</id>
+      <count>1</count>
+      <tex>1</tex>
+    </InventorySlot>
+  </slot>
   <selected>-1</selected>
-  <desc />
   <page>0</page>
 </InventoryClass>

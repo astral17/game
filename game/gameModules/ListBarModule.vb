@@ -12,6 +12,7 @@
     Public Class listBarClass
         Public selected As Integer = ListsEnum.inventory
         Public activeCount As Integer = 0
+        Public desc As String = ""
         Public open As Boolean = False
         Public lists As New List(Of listStruct)
         Public Sub init()

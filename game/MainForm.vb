@@ -1,5 +1,5 @@
 ﻿Public Class MainForm
-    Public version = "1.0.0pre-3"
+    Public version = "1.0.0pre-4"
     Public sX, sY, wX, wY, wordscount As Integer
     Public kUp, kDown, kLeft, kRight As Boolean
     Public godMode As Boolean = False
@@ -64,7 +64,7 @@
                 If tmp Then
                     listBar.open = False
                 Else
-                    Inv.desc = ""
+                    listBar.desc = ""
                     If (listBar.selected < 0) Or (listBar.selected >= listBar.activeCount) Then
                         listBar.selected = ListsEnum.inventory
                     End If
@@ -90,7 +90,7 @@
             Case Keys.T
                 loadmap(Player.curWorld, Player.x, Player.y)
             Case Keys.Y
-                loadmap("cave2")
+                'Equipment.Equip(EquipmentSlots.Chest, Inv.slot(0))
             Case Keys.O
                 Player.stepCD = 0
             Case Keys.C
@@ -354,6 +354,7 @@
     End Sub
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Player.version = version
+        EnumInit()
         unpressarrows()
         LoadTextures(32)
         Item.init()
@@ -371,7 +372,6 @@
         Next
         fReader.Close()
         Randomize()
-
         'tmp
         'For i As Integer = 0 To 91
         'inv.additem(i, 1)
@@ -610,10 +610,21 @@
                         e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
                         e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
                         e.Graphics.DrawString((Inv.page + 1).ToString + "/" + (Math.Max(Math.Floor(Inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(Inv.slot.Count / 10) > 8) + 5 * (Inv.page > 8), 446 - 10)
-                        If Inv.desc <> "" Then
-                            e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
-                            e.Graphics.DrawString(Inv.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
-                        End If
+                        'If listBar.desc <> "" Then
+                        '    e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
+                        '    e.Graphics.DrawString(listBar.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
+                        'End If
+                    End If
+                    'отрисовка экипировки
+                    If (listBar.selected = ListsEnum.equipment) Then
+                        e.Graphics.FillRectangle(Brushes.LightGray, 100, 10, 400, 460)
+
+                        For i As Integer = 0 To EquipmentSlots.Last
+                            e.Graphics.FillRectangle(Brushes.Gray, Equipment.equipSlot(i))
+                            If Equipment.equipment(i).id <> -1 Then
+                                e.Graphics.DrawImage(itemtex(Item.itemsInfo(Equipment.equipment(i).id).tex), Equipment.equipSlot(i).X + 9, Equipment.equipSlot(i).Y + 9)
+                            End If
+                        Next
                     End If
                     'отрисовка отрытого магазина
                     If (listBar.selected = ListsEnum.shop) And (Shop.selectedShop <> -1) Then
@@ -641,10 +652,14 @@
                         e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 435)
                         e.Graphics.DrawLine(Pens.Black, 460, 446, 440, 457)
                         e.Graphics.DrawString((Shop.page + 1).ToString + "/" + (Math.Max(Math.Floor(Inv.slot.Count / 10) + 1, 1)).ToString, New Font("Arial", 14), Brushes.Black, 284 + 5 * (Math.Floor(Inv.slot.Count / 10) > 8) + 5 * (Inv.page > 8), 446 - 10)
-                        If Shop.desc <> "" Then
-                            e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
-                            e.Graphics.DrawString(Shop.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
-                        End If
+                        'If Shop.desc <> "" Then
+                        '    e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
+                        '    e.Graphics.DrawString(Shop.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
+                        'End If
+                    End If
+                    If (listBar.desc <> "") And (listBar.selected > -1) Then
+                        e.Graphics.FillRectangle(Brushes.LightGray, 500, 10, 130, 460)
+                        e.Graphics.DrawString(listBar.desc, New Font("Arial", 12), Brushes.Black, New RectangleF(501, 20, 130, 200))
                     End If
                 End If
             Case "battleInit"
@@ -689,6 +704,7 @@
         End If
     End Function
     Private Sub PictureBox1_MouseDown(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseDown
+        'MessageBox.Show(e.X.ToString + " " + e.Y.ToString)
         If listBar.open Then
             For i As Integer = 0 To listBar.activeCount - 1
                 If inRect(e.X, e.Y, 50, 10 + i * 50, 100, 10 + (i + 1) * 50) Then
@@ -733,10 +749,15 @@
                     For i As Integer = 0 To 9 '105, 30 + 40 * i
                         If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
                             Dim it As Integer = i + Inv.page * 10
+                            If Inv.slot.Count <= it Then
+                                Continue For
+                            End If
                             If (Item.itemsInfo(Inv.slot(it).id).isUsable) Then
                                 If Inv.useItem(it) Then
                                     Inv.subItem(Inv.slot(it).id, 1)
                                 End If
+                            ElseIf Item.itemsInfo(Inv.slot(it).id).wearPlace > EquipmentSlots.None Then
+                                Equipment.Equip(Inv.slot(it))
                             End If
                         End If
                     Next
@@ -751,6 +772,15 @@
                         Inv.page += 1
                     End If
                 End If
+            ElseIf listBar.selected = ListsEnum.equipment Then
+                For i As Integer = 0 To EquipmentSlots.Last
+                    If Equipment.equipSlot(i).Contains(e.X, e.Y) Then
+                        'MessageBox.Show(i)
+                        If e.Button = Windows.Forms.MouseButtons.Right Then
+                            Equipment.UnEquip(i)
+                        End If
+                    End If
+                Next
             End If
         End If
     End Sub
@@ -758,26 +788,38 @@
     Private Sub PictureBox1_MouseMove(sender As Object, e As MouseEventArgs) Handles PictureBox1.MouseMove
         If listBar.open Then
             If (listBar.selected = ListsEnum.shop) And (Shop.selectedShop <> -1) Then
-                Shop.desc = "LBM - buy" + vbNewLine + "RBM - sell"
+                listBar.desc = "LBM - buy" + vbNewLine + "RBM - sell"
                 Shop.selectedItem = -1
                 For i As Integer = 0 To 9 '105, 30 + 40 * i
                     If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
                         Dim it As Integer = i + Shop.page * 10
-                        If Inv.slot.Count >= it Then
-                            Shop.desc = Item.itemsInfo(Shop.items(Shop.selectedShop, it).id).desc + vbNewLine + "LBM - buy" + vbNewLine + "RBM - sell"
+                        If Shop.itemsCount(Shop.selectedShop) >= it Then
+                            listBar.desc = Item.itemsInfo(Shop.items(Shop.selectedShop, it).id).desc + vbNewLine + "LBM - buy" + vbNewLine + "RBM - sell"
                             Shop.selectedItem = it
                         End If
                     End If
                 Next
             ElseIf listBar.selected = ListsEnum.inventory Then
-                Inv.desc = ""
+                listBar.desc = ""
                 Inv.selected = -1
                 For i As Integer = 0 To 9 '105, 30 + 40 * i
                     If inRect(e.X, e.Y, 105, 50 + 38 * i, 495, 50 + 38 * i + 32) Then
                         Dim it As Integer = i + Inv.page * 10
                         If Inv.slot.Count > it Then
-                            Inv.desc = Item.itemsInfo(Inv.slot(it).id).desc
+                            listBar.desc = Item.itemsInfo(Inv.slot(it).id).desc
                             Inv.selected = it
+                        End If
+                    End If
+                Next
+            ElseIf listBar.selected = ListsEnum.equipment Then
+                Equipment.selected = -1
+                listBar.desc = ""
+                For i As Integer = 0 To EquipmentSlots.Last
+                    If Equipment.equipSlot(i).Contains(e.X, e.Y) Then
+                        'MessageBox.Show(i)
+                        If Equipment.equipment(i).id > -1 Then
+                            Equipment.selected = i
+                            listBar.desc = Item.itemsInfo(Equipment.equipment(i).id).desc
                         End If
                     End If
                 Next

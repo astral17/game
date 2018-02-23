@@ -10,6 +10,7 @@
       <dureff>1</dureff>
       <poweff>5</poweff>
       <isUsable>false</isUsable>
+      <wearPlace>MainHand</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>superArmor</name>
@@ -20,6 +21,7 @@
       <dureff>300</dureff>
       <poweff>8</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>money</name>
@@ -30,6 +32,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>doorKey</name>
@@ -40,6 +43,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>caveKey</name>
@@ -50,6 +54,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>chestKey</name>
@@ -60,6 +65,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>reincarnator</name>
@@ -70,6 +76,7 @@
       <dureff>1</dureff>
       <poweff>5</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>cheatSword</name>
@@ -80,6 +87,7 @@
       <dureff>1</dureff>
       <poweff>999</poweff>
       <isUsable>false</isUsable>
+      <wearPlace>MainHand</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>masterKey</name>
@@ -90,6 +98,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>immortalityAmulet</name>
@@ -100,6 +109,7 @@
       <dureff>1</dureff>
       <poweff>5</poweff>
       <isUsable>false</isUsable>
+      <wearPlace>OffHand</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>waterPill</name>
@@ -110,6 +120,7 @@
       <dureff>500</dureff>
       <poweff>1</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
     <ItemInfo>
       <name>veryOldKey</name>
@@ -120,6 +131,7 @@
       <dureff>0</dureff>
       <poweff>0</poweff>
       <isUsable>true</isUsable>
+      <wearPlace>None</wearPlace>
     </ItemInfo>
   </itemsInfo>
   <items>
@@ -129,14 +141,6 @@
       <x>19</x>
       <y>17</y>
       <tex>3</tex>
-      <world>main</world>
-    </ItemObject>
-    <ItemObject>
-      <id>10</id>
-      <count>1</count>
-      <x>1</x>
-      <y>2</y>
-      <tex>0</tex>
       <world>main</world>
     </ItemObject>
     <ItemObject>
@@ -153,22 +157,6 @@
       <x>25</x>
       <y>7</y>
       <tex>1</tex>
-      <world>main</world>
-    </ItemObject>
-    <ItemObject>
-      <id>0</id>
-      <count>1</count>
-      <x>7</x>
-      <y>2</y>
-      <tex>0</tex>
-      <world>main</world>
-    </ItemObject>
-    <ItemObject>
-      <id>3</id>
-      <count>1</count>
-      <x>2</x>
-      <y>2</y>
-      <tex>3</tex>
       <world>main</world>
     </ItemObject>
     <ItemObject>

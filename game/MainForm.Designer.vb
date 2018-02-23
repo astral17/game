@@ -32,7 +32,7 @@ Partial Class MainForm
         '
         'PictureBox1
         '
-        Me.PictureBox1.Location = New System.Drawing.Point(2, 2)
+        Me.PictureBox1.Location = New System.Drawing.Point(1, 1)
         Me.PictureBox1.Name = "PictureBox1"
         Me.PictureBox1.Size = New System.Drawing.Size(640, 480)
         Me.PictureBox1.TabIndex = 0
@@ -58,15 +58,15 @@ Partial Class MainForm
         Me.Label1.TabIndex = 2
         Me.Label1.Text = "Label1"
         '
-        'Form1
+        'MainForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(643, 483)
+        Me.ClientSize = New System.Drawing.Size(642, 482)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.typeText)
         Me.Controls.Add(Me.PictureBox1)
-        Me.Name = "Form1"
+        Me.Name = "MainForm"
         Me.Text = "game"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)

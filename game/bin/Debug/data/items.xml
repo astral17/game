@@ -8,6 +8,7 @@
 		<duration>1</duration>
 		<power>5</power>
 		<usable>0</usable>
+		<wearPlace>MainHand</wearPlace>
 	</item>
 	<item>
 		<name>superArmor</name>
@@ -18,6 +19,7 @@
 		<duration>300</duration>
 		<power>8</power>
 		<usable>1</usable>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>money</name>
@@ -25,6 +27,7 @@
 		<description>onlyEditorItem</description>
 		<texture>2</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>doorKey</name>
@@ -32,6 +35,7 @@
 		<description>master key which open standard doors</description>
 		<texture>3</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>caveKey</name>
@@ -39,6 +43,7 @@
 		<description>key which can open door in GREATE MAZE</description>
 		<texture>4</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>chestKey</name>
@@ -46,6 +51,7 @@
 		<description>key for chest</description>
 		<texture>5</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>reincarnator</name>
@@ -56,6 +62,7 @@
 		<duration>1</duration>
 		<power>5</power>
 		<usable>1</usable>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>cheatSword</name>
@@ -66,6 +73,7 @@
 		<duration>1</duration>
 		<power>999</power>
 		<usable>0</usable>
+		<wearPlace>MainHand</wearPlace>
 	</item>
 	<item>
 		<name>masterKey</name>
@@ -73,6 +81,7 @@
 		<description>this key can open all doors in game</description>
 		<texture>8</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>immortalityAmulet</name>
@@ -83,6 +92,7 @@
 		<duration>1</duration>
 		<power>5</power>
 		<usable>0</usable>
+		<wearPlace>OffHand</wearPlace>
 	</item>
 	<item>
 		<name>waterPill</name>
@@ -93,6 +103,7 @@
 		<duration>500</duration>
 		<power>1</power>
 		<usable>1</usable>
+		<wearPlace>None</wearPlace>
 	</item>
 	<item>
 		<name>veryOldKey</name>
@@ -100,6 +111,7 @@
 		<description>this key is very old and i don't no which door he open</description>
 		<texture>5</texture>
 		<effectID>0</effectID>
+		<wearPlace>None</wearPlace>
 	</item>
 </items>
 

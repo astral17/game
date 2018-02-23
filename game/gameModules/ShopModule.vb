@@ -18,7 +18,7 @@
         Public itemsCount(99) As Integer
         Public selectedItem As Integer = -1
         Public selectedShop As Integer = -1
-        Public desc As String = "LBM - buy" + vbNewLine + "RBM - sell"
+        'Public desc As String = "LBM - buy" + vbNewLine + "RBM - sell"
         Public page As Integer = 0
         Public Function create(ByVal x As Integer, y As Integer, tex1 As Integer)
             count += 1
@@ -34,6 +34,9 @@
             items(num, itemsCount(num)) = item
         End Sub
         Public Sub buyItem(ByVal shopNum As Integer, itemID As Integer, itemCount As Integer)
+            If itemID < 0 Then
+                Return
+            End If
             With items(shopNum, itemID)
                 If ((.count <> -1 And .count < itemCount) Or Player.money < .cost * itemCount) Then
                     Return
@@ -46,6 +49,9 @@
             End With
         End Sub
         Public Sub sellItem(ByVal shopNum As Integer, itemID As Integer, itemCount As Integer)
+            If itemID < 0 Then
+                Return
+            End If
             With items(shopNum, itemID)
                 If Inv.searchItem(.id) < itemCount Then
                     Return

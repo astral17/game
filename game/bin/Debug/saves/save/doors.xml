@@ -2,13 +2,6 @@
 <DoorClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <doors>
     <doorStruct>
-      <x>13</x>
-      <y>7</y>
-      <id>3</id>
-      <tex>8</tex>
-      <world>main</world>
-    </doorStruct>
-    <doorStruct>
       <x>19</x>
       <y>19</y>
       <id>3</id>

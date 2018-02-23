@@ -17,7 +17,8 @@
         Public name, type, desc, world As String
         Public tex, effectID, dureff, poweff As Integer
         Public isUsable As Boolean
-        Public Sub New(ByVal name As String, type As String, desc As String, tex As Integer, effectID As Integer, dureff As Integer, poweff As Integer, isUsable As Boolean)
+        Public wearPlace As EquipmentSlots
+        Public Sub New(ByVal name As String, type As String, desc As String, tex As Integer, effectID As Integer, dureff As Integer, poweff As Integer, isUsable As Boolean, wearPlace As EquipmentSlots)
             Me.name = name
             Me.type = type
             Me.desc = desc
@@ -26,6 +27,7 @@
             Me.dureff = dureff
             Me.poweff = poweff
             Me.isUsable = isUsable
+            Me.wearPlace = wearPlace
         End Sub
     End Structure
     <Serializable()>
@@ -43,6 +45,8 @@
                 Dim dureff As Integer = 0
                 Dim poweff As Integer = 0
                 Dim isUsable As Boolean
+                Dim wearPlace As String
+                wearPlace = xe.Element("wearPlace")
                 effID = xe.Element("effectID")
                 If effID <> "0" Then
                     dureff = xe.Element("duration")
@@ -59,11 +63,25 @@
                     poweff = 0
                     isUsable = True
                 End If
-                itemsInfo.Add(New ItemInfo(xe.Element("name"), xe.Element("type"), xe.Element("description"), xe.Element("texture"), effID, dureff, poweff, isUsable))
+                itemsInfo.Add(New ItemInfo(xe.Element("name"), xe.Element("type"), xe.Element("description"), xe.Element("texture"), effID, dureff, poweff, isUsable, EquipmentSlotsDict.Item(wearPlace)))
             Next
         End Sub
         Public Sub spawnitem(ByVal x As Integer, y As Integer, id As Integer, counti As Integer)
             items.Add(New ItemObject(id, x, y, counti, itemsInfo(id).tex, Player.curWorld))
         End Sub
+        Public Function useItem(ByVal item As InventorySlot) As Boolean
+            If item.count < 1 Then
+                Return False
+            End If
+            Dim idEff = itemsInfo(item.id).effectID
+            If idEff = 0 Then
+                Return False
+            End If
+            Dim dureff = itemsInfo(item.id).dureff
+            Dim poweff = itemsInfo(item.id).poweff
+            Dim isUsable = itemsInfo(item.id).isUsable
+            Effect.add(idEff, dureff, poweff, idEff, isUsable)
+            Return True
+        End Function
     End Class
 End Module

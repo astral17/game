@@ -2,21 +2,9 @@
 <EnemyClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <enemies>
     <enemyStruct>
-      <x>4</x>
-      <y>2</y>
-      <dif>1</dif>
-      <world>main</world>
-    </enemyStruct>
-    <enemyStruct>
       <x>19</x>
       <y>17</y>
       <dif>5</dif>
-      <world>main</world>
-    </enemyStruct>
-    <enemyStruct>
-      <x>13</x>
-      <y>6</y>
-      <dif>1</dif>
       <world>main</world>
     </enemyStruct>
     <enemyStruct>
@@ -35,6 +23,6 @@
   <stepChance>5</stepChance>
   <stepDif>2</stepDif>
   <curBattle>-1</curBattle>
-  <curDif>0</curDif>
-  <update>false</update>
+  <curDif>1</curDif>
+  <update>true</update>
 </EnemyClass>
